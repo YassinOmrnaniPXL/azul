@@ -11,6 +11,8 @@ using Moq;
 
 namespace Azul.Core.Tests
 {
+    [ProjectComponentTestFixture("1TINProject", "Azul", "TableManager",
+        @"Azul.Core\TableAggregate\TableManager.cs;")]
     public class TableManagerTests
     {
         private Mock<ITableRepository> _tableRepositoryMock = null!;

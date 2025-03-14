@@ -8,7 +8,8 @@ using Guts.Client.Core;
 
 namespace Azul.Core.Tests
 {
-    [TestFixture]
+    [ProjectComponentTestFixture("1TINProject", "Azul", "TileBag",
+        @"Azul.Core\TileFactoryAggregate\TileBag.cs;")]
     public class TileBagTests
     {
         private ITileBag? _tileBag;

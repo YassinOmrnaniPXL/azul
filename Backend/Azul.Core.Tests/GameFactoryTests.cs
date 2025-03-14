@@ -12,6 +12,8 @@ using Moq;
 
 namespace Azul.Core.Tests;
 
+[ProjectComponentTestFixture("1TINProject", "Azul", "GameFactory",
+    @"Azul.Core\GameAggregate\GameFactory.cs;")]
 public class GameFactoryTests
 {
     private GameFactory _gameFactory = null!;

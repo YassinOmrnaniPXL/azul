@@ -5,6 +5,9 @@ using Guts.Client.Core;
 
 namespace Azul.Core.Tests;
 
+[ProjectComponentTestFixture("1TINProject", "Azul", "Player",
+    @"Azul.Core\PlayerAggregate\PlayerBase.cs;
+Azul.Core\PlayerAggregate\HumanPlayer.cs;")]
 public class PlayerTests
 {
     [MonitoredTest]

@@ -11,7 +11,10 @@ using Azul.Core.GameAggregate;
 
 namespace Azul.Core.Tests;
 
-[TestFixture]
+[ProjectComponentTestFixture("1TINProject", "Azul", "Board",
+    @"Azul.Core\BoardAggregate\Board.cs;
+Azul.Core\BoardAggregate\PatternLine.cs;
+Azul.Core\BoardAggregate\TileSpot.cs;")]
 public class BoardTests
 {
     private IBoard? _board;

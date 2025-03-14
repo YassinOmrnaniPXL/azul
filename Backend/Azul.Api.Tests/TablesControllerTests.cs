@@ -15,6 +15,8 @@ using Moq;
 
 namespace Azul.Api.Tests;
 
+[ProjectComponentTestFixture("1TINProject", "Azul", "TablesCtlr",
+    @"Azul.Api\Controllers\TablesController.cs")]
 public class TablesControllerTests
 {
     private TablesController _controller = null!;

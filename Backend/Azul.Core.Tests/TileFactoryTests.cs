@@ -7,7 +7,8 @@ using Moq;
 
 namespace Azul.Core.Tests;
 
-[TestFixture]
+[ProjectComponentTestFixture("1TINProject", "Azul", "TileFactory",
+    @"Azul.Core\TileFactoryAggregate\TileFactory.cs;")]
 public class TileFactoryTests
 {
     private ITileFactory? _tileFactory;

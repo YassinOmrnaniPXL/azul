@@ -5,6 +5,8 @@ using Guts.Client.Core;
 
 namespace Azul.Core.Tests;
 
+[ProjectComponentTestFixture("1TINProject", "Azul", "FactoryDisplay",
+    @"Azul.Core\TileFactoryAggregate\FactoryDisplay.cs;")]
 public class FactoryDisplayTests
 {
     [MonitoredTest]

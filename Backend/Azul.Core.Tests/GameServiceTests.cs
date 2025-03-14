@@ -10,7 +10,8 @@ using Guts.Client.Core;
 
 namespace Azul.Core.Tests
 {
-    [TestFixture]
+    [ProjectComponentTestFixture("1TINProject", "Azul", "GameService",
+        @"Azul.Core\GameAggregate\GameService.cs;")]
     public class GameServiceTests
     {
         private Mock<IGameRepository> _gameRepositoryMock = null!;

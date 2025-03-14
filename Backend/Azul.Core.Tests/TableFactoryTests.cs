@@ -7,6 +7,8 @@ using Guts.Client.Core;
 
 namespace Azul.Core.Tests;
 
+[ProjectComponentTestFixture("1TINProject", "Azul", "TableFactory",
+    @"Azul.Core\TableAggregate\TableFactory.cs;")]
 public class TableFactoryTests
 {
     private ITableFactory? _tableFactory;

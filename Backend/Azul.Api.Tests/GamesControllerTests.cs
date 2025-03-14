@@ -15,6 +15,8 @@ using Moq;
 
 namespace Azul.Api.Tests
 {
+    [ProjectComponentTestFixture("1TINProject", "Azul", "GamesCtlr",
+        @"Azul.Api\Controllers\GamesController.cs")]
     public class GamesControllerTests
     {
         private Mock<IGameService> _gameServiceMock = null!;

@@ -7,7 +7,8 @@ using NUnit.Framework;
 
 namespace Azul.Core.Tests
 {
-    [TestFixture]
+    [ProjectComponentTestFixture("1TINProject", "Azul", "TileSpot",
+        @"Azul.Core\BoardAggregate\TileSpot.cs;")]
     public class TileSpotTests
     {
         private TileSpot _tileSpot = null!;

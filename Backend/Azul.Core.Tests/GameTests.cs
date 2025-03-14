@@ -13,7 +13,8 @@ using Guts.Client.Core;
 
 namespace Azul.Core.Tests
 {
-    [TestFixture]
+    [ProjectComponentTestFixture("1TINProject", "Azul", "Game",
+        @"Azul.Core\GameAggregate\Game.cs;")]
     public class GameTests
     {
         private Mock<ITileFactory> _tileFactoryMock = null!;

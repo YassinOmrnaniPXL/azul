@@ -4,7 +4,8 @@ using NUnit.Framework;
 
 namespace Azul.Core.Tests
 {
-    [TestFixture]
+    [ProjectComponentTestFixture("1TINProject", "Azul", "TablePreferences",
+        @"Azul.Core\TableAggregate\TablePreferences.cs;")]
     public class TablePreferencesTests
     {
         private TablePreferences _tablePreferences = null!;

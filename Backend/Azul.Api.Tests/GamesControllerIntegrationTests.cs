@@ -12,6 +12,11 @@ using Guts.Client.Core;
 
 namespace Azul.Api.Tests;
 
+[ProjectComponentTestFixture("1TINProject", "Azul", "GamesIntegration",
+    @"Azul.Api\Controllers\GamesController.cs;
+Azul.Core\GameAggregate\GameService.cs;
+Azul.Core\GameAggregate\GameFactory.cs;
+Azul.Core\GameAggregate\Game.cs;")]
 public class GamesControllerIntegrationTests : ControllerIntegrationTestsBase<GamesController>
 {
     [MonitoredTest]

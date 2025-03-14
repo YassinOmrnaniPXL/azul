@@ -6,6 +6,8 @@ using Guts.Client.Core;
 
 namespace Azul.Infrastructure.Tests
 {
+    [ProjectComponentTestFixture("1TINProject", "Azul", "InMemoryTableRepo",
+        @"Azul.Infrastructure\InMemoryTableRepository.cs")]
     public class InMemoryTableRepositoryTests
     {
         private InMemoryTableRepository _repository = null!;

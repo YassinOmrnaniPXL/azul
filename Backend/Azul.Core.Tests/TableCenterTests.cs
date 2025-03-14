@@ -5,6 +5,8 @@ using Guts.Client.Core;
 
 namespace Azul.Core.Tests;
 
+[ProjectComponentTestFixture("1TINProject", "Azul", "TableCenter",
+    @"Azul.Core\TileFactoryAggregate\TableCenter.cs;")]
 public class TableCenterTests
 {
     [MonitoredTest]

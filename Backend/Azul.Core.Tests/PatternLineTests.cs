@@ -6,6 +6,8 @@ using Guts.Client.Core;
 
 namespace Azul.Core.Tests;
 
+[ProjectComponentTestFixture("1TINProject", "Azul", "PatternLine",
+    @"Azul.Core\BoardAggregate\PatternLine.cs;")]
 public class PatternLineTests
 {
     [MonitoredTest]

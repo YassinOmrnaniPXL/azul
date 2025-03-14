@@ -9,7 +9,8 @@ using Guts.Client.Core;
 
 namespace Azul.Core.Tests;
 
-[TestFixture]
+[ProjectComponentTestFixture("1TINProject", "Azul", "Table",
+    @"Azul.Core\TableAggregate\Table.cs;")]
 public class TableTests
 {
     private Guid _id;
