@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("loginForm");
     const errorDiv = document.getElementById("errorMessage");
 
-    // Vul automatisch e-mail in als die meegegeven is via URL
     const urlParams = new URLSearchParams(window.location.search);
     const emailFromRegister = urlParams.get("email");
     if (emailFromRegister) {
@@ -17,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         errorDiv.textContent = "";
 
-        // Check lege velden
         if (!email || !password) {
             errorDiv.textContent = "Gelieve e-mailadres en wachtwoord in te vullen.";
             return;
@@ -40,7 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (response.ok) {
-                // Login OK → navigeer naar lobby
                 window.location.href = "lobby.html";
             } else {
                 const errorData = await response.json();

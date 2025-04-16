@@ -8,27 +8,23 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     const lastVisit = document.getElementById("lastVisit").value;
     const errorDiv = document.getElementById("errorMessage");
 
-    errorDiv.textContent = ""; // Reset foutmelding
+    errorDiv.textContent = "";
 
-    // 1. Check verplichte velden
     if (!email || !username || !password || !confirmPassword) {
         errorDiv.textContent = "Gelieve alle verplichte velden in te vullen.";
         return;
     }
 
-    // 2. Check wachtwoordlengte
     if (password.length < 6) {
         errorDiv.textContent = "Wachtwoord moet minstens 6 karakters bevatten.";
         return;
     }
 
-    // 3. Check wachtwoorden overeenkomen
     if (password !== confirmPassword) {
         errorDiv.textContent = "Wachtwoorden komen niet overeen.";
         return;
     }
 
-    // 4. Check of lastVisit geldig is (in het verleden)
     if (lastVisit && new Date(lastVisit) > new Date()) {
         errorDiv.textContent = "Datum van laatste verblijf in Portugal moet in het verleden liggen.";
         return;
@@ -53,7 +49,6 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         });
 
         if (response.ok) {
-            // Succesvol geregistreerd, ga naar login pagina met ingevuld e-mailadres
             window.location.href = `login.html?email=${encodeURIComponent(email)}`;
         } else {
             const errorData = await response.json();
