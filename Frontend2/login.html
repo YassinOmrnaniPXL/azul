@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+<div class="form-container">
+    <h2>Inloggen</h2>
+    <form id="loginForm">
+        <label for="email">E-mailadres*</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="password">Wachtwoord*</label>
+        <input type="password" id="password" name="password" required>
+
+        <div id="errorMessage" class="error"></div>
+
+        <button type="submit">Inloggen</button>
+
+        <!-- Hier komt de link -->
+        <div class="register-link">
+            <p>Nog geen account? <a href="register.html">Registreer hier</a></p>
+        </div>
+    </form>
+</div>
+
+<script src="js/login.js"></script>
+</body>
+</html>
