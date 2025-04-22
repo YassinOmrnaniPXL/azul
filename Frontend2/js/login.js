@@ -1,23 +1,48 @@
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("loginForm");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const submitButton = form.querySelector("button[type='submit']");
     const errorDiv = document.getElementById("errorMessage");
 
     const urlParams = new URLSearchParams(window.location.search);
     const emailFromRegister = urlParams.get("email");
     if (emailFromRegister) {
-        document.getElementById("email").value = emailFromRegister;
+        emailInput.value = emailFromRegister;
     }
 
     form.addEventListener("submit", async function(e) {
         e.preventDefault();
 
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value;
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
 
         errorDiv.textContent = "";
+        submitButton.disabled = true;
+        submitButton.textContent = 'Bezig met inloggen...';
 
-        if (!email || !password) {
-            errorDiv.textContent = "Gelieve e-mailadres en wachtwoord in te vullen.";
+        if (!email && !password) {
+            errorDiv.textContent = "Vul uw e-mailadres en wachtwoord in om in te loggen.";
+            submitButton.disabled = false;
+            submitButton.textContent = 'Inloggen';
+            return;
+        } else if (!email) {
+            errorDiv.textContent = "Vul uw e-mailadres in.";
+            submitButton.disabled = false;
+            submitButton.textContent = 'Inloggen';
+            return;
+        } else if (!password) {
+            errorDiv.textContent = "Vul uw wachtwoord in.";
+            submitButton.disabled = false;
+            submitButton.textContent = 'Inloggen';
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            errorDiv.textContent = "Voer een geldig e-mailadres in (bijvoorbeeld: naam@voorbeeld.nl).";
+            submitButton.disabled = false;
+            submitButton.textContent = 'Inloggen';
             return;
         }
 
@@ -33,18 +58,41 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + sessionStorage.getItem("token")
                 }
             });
 
             if (response.ok) {
+                try {
+                    const data = await response.json();
+                    if (data.token) {
+                        sessionStorage.setItem("token", data.token);
+                    }
+                } catch (tokenError) {
+                    console.error("Error parsing token response:", tokenError);
+                }
                 window.location.href = "lobby.html";
+            } else if (response.status === 401) {
+                errorDiv.textContent = "Onjuiste e-mail of wachtwoord. Probeer het opnieuw.";
+            } else if (response.status === 404) {
+                errorDiv.textContent = "Geen account gevonden met dit e-mailadres. Controleer uw gegevens of registreer.";
+            } else if (response.status >= 500) {
+                errorDiv.textContent = "Er is een probleem met de server. Probeer het later opnieuw.";
             } else {
-                const errorData = await response.json();
-                errorDiv.textContent = errorData.message || "Inloggegevens zijn onjuist.";
+                let errorMessage = "Inloggen mislukt. Controleer uw gegevens en probeer het opnieuw.";
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorMessage;
+                } catch (jsonError) {
+                    console.error("Error parsing error response:", jsonError);
+                }
+                errorDiv.textContent = errorMessage;
             }
         } catch (err) {
-            errorDiv.textContent = "Kan geen verbinding maken met de server.";
+            console.error("Login fetch error:", err);
+            errorDiv.textContent = "Kan geen verbinding maken met de server. Controleer uw internetverbinding en probeer het later opnieuw.";
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Inloggen';
         }
     });
 });
