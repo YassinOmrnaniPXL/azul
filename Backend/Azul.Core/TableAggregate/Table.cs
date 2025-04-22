@@ -9,19 +9,28 @@ namespace Azul.Core.TableAggregate;
 /// <inheritdoc cref="ITable"/>
 internal class Table : ITable
 {
+
+    public ITablePreferences Preferences { get; private set; }
+    public Guid Id { get; private set; }
+    Guid ITable.Id => Id;
+    public Guid GameId { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+
     internal Table(Guid id, ITablePreferences preferences)
     {
+        Id = id;
+        Preferences = preferences;
+        
     }
 
-    public Guid Id => throw new NotImplementedException();
 
-    public ITablePreferences Preferences => throw new NotImplementedException();
 
-    public IReadOnlyList<IPlayer> SeatedPlayers => throw new NotImplementedException();
+    private readonly List<IPlayer> _seatedPlayers = new();
+    IReadOnlyList<IPlayer> ITable.SeatedPlayers => _seatedPlayers;
 
-    public bool HasAvailableSeat => throw new NotImplementedException();
+    public bool HasAvailableSeat => _seatedPlayers.Count < Preferences.NumberOfPlayers;
 
-    public Guid GameId { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    
 
     public void FillWithArtificialPlayers(IGamePlayStrategy gamePlayStrategy)
     {
@@ -30,11 +39,21 @@ internal class Table : ITable
 
     public void Join(User user)
     {
-        throw new NotImplementedException();
+        if (!HasAvailableSeat)
+        {
+            throw new InvalidOperationException("No available seats at the table.");
+        }
+
+        var player = new HumanPlayer(user.Id, user.UserName, user.LastVisitToPortugal);
+        _seatedPlayers.Add(player);
     }
 
     public void Leave(Guid userId)
     {
-        throw new NotImplementedException();
+        var playerToRemove = _seatedPlayers.FirstOrDefault(p => p.Id == userId);
+        if (playerToRemove != null)
+        {
+            _seatedPlayers.Remove(playerToRemove);
+        }
     }
 }
