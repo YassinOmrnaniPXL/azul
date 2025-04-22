@@ -6,16 +6,27 @@ namespace Azul.Core.BoardAggregate;
 /// <inheritdoc cref="IBoard"/>
 internal class Board : IBoard
 {
-    public IPatternLine[] PatternLines => throw new NotImplementedException();
+    public IPatternLine[] PatternLines { get; }
 
-    public TileSpot[,] Wall => throw new NotImplementedException();
+    public TileSpot[,] Wall { get; }
 
-    public TileSpot[] FloorLine => throw new NotImplementedException();
+    public TileSpot[] FloorLine { get; }
+    public int Score { get; private set; }
+    public bool HasCompletedHorizontalLine => Wall.Cast<TileSpot>().All(ts => ts.HasTile);
 
-    public int Score => throw new NotImplementedException();
+    public Board()
+    {
+        //TD: patternline en wall initialiseren
+        // floorlune init
+        FloorLine = new TileSpot[7];
+        for (int i = 0; i < 7; i++)
+        {
+            FloorLine[i] = new TileSpot();
+        }
 
-    public bool HasCompletedHorizontalLine => throw new NotImplementedException();
-
+        // score 0 (staat in de test)
+        Score = 0;
+    }
     public void AddTilesToFloorLine(IReadOnlyList<TileType> tilesToAdd, ITileFactory tileFactory)
     {
         throw new NotImplementedException();
