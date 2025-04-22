@@ -9,8 +9,21 @@ namespace Azul.Core.GameAggregate;
 
 internal class GameFactory : IGameFactory
 {
+    private readonly ITileFactory _tileFactory;
+
+    public GameFactory() 
+    {
+    }
+    public GameFactory(ITileFactory tileFactory)
+    {
+        _tileFactory = tileFactory;
+    }
+
     public IGame CreateNewForTable(ITable table)
     {
-        throw new NotImplementedException();
+        var gameId = Guid.NewGuid();
+        var players = table.SeatedPlayers.ToArray(); // van IReadOnlyList naar array
+
+        return new Game(gameId, _tileFactory, players);
     }
 }
