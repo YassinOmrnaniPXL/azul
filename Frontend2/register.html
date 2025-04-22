@@ -2,37 +2,193 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Registreren</title>
-    <link rel="stylesheet" href="css/register.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registreren | Azul</title>
+    <!-- Add TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Extended Azul color palette
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                azulBlue: '#2a5b9c', 
+                azulCream: '#fdf6e3', 
+                azulAccent: '#e5a04f',
+                azulTile1: '#d95454', // red tile
+                azulTile2: '#5254d9', // deep blue tile
+                azulTile3: '#54d978', // green tile
+                azulTile4: '#c154d9', // purple tile
+                azulTile5: '#d9c154', // yellow tile
+              },
+              fontFamily: {
+                'display': ['Playfair Display', 'serif'],
+                'sans': ['Raleway', 'sans-serif'],
+              },
+            }
+          }
+        }
+    </script>
+    <style>
+        /* Import Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@300;400;600&display=swap');
+        
+        /* Solid background instead of mosaic pattern */
+        body {
+            background-color: #f8f5ee;
+        }
+        
+        /* Animation for form appearance */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-animation {
+            animation: slideUp 0.6s ease-out forwards;
+        }
+        
+        /* Input focus effect */
+        .focus-ring {
+            transition: all 0.3s ease;
+        }
+        
+        .focus-ring:focus {
+            box-shadow: 0 0 0 3px rgba(42, 91, 156, 0.3);
+        }
+        
+        /* Button hover effect */
+        .btn-hover {
+            transition: all 0.3s ease;
+            background-size: 200% auto;
+            background-image: linear-gradient(to right, #2a5b9c 0%, #3a6bac 50%, #2a5b9c 100%);
+        }
+        
+        .btn-hover:hover {
+            background-position: right center;
+            transform: translateY(-2px);
+        }
+        
+        /* Decorative tiles at the edges */
+        .edge-tile {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            z-index: 1;
+        }
+        
+        /* Form container without glass effect */
+        .glass-container {
+            background: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Progress indicator dots */
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #ddd;
+            display: inline-block;
+            margin: 0 3px;
+        }
+        
+        .progress-dot.active {
+            background-color: #2a5b9c;
+            transform: scale(1.2);
+        }
+    </style>
 </head>
-<body>
-<div class="form-container">
-    <h2>Registreren</h2>
-    <form id="registerForm">
-        <label for="email">E-mailadres*</label>
-        <input type="email" id="email" name="email" required>
+<body class="flex items-center justify-center min-h-screen font-sans py-8">
+    <!-- Decorative tiles at the edges -->
+    <div class="edge-tile bg-azulTile1" style="top: 15%; left: 10%; transform: rotate(15deg);"></div>
+    <div class="edge-tile bg-azulTile2" style="top: 25%; right: 10%; transform: rotate(-10deg);"></div>
+    <div class="edge-tile bg-azulTile3" style="bottom: 20%; left: 15%; transform: rotate(5deg);"></div>
+    <div class="edge-tile bg-azulTile4" style="bottom: 15%; right: 12%; transform: rotate(-5deg);"></div>
+    
+    <div class="form-animation glass-container p-8 md:p-10 rounded-xl shadow-lg w-full max-w-md border-2 border-azulBlue mx-4 relative">
+        <!-- Form header -->
+        <a href="index.html" class="block text-center mb-1 text-azulBlue hover:text-azulAccent transition-colors duration-300">
+            <span class="text-xl font-display">AZUL</span>
+        </a>
+        <h2 class="text-3xl font-bold mb-2 text-center text-azulBlue font-display">Registreren</h2>
+        
+        <!-- Progress indicators -->
+        <div class="flex justify-center mb-6">
+            <span class="progress-dot active"></span>
+            <span class="progress-dot"></span>
+            <span class="progress-dot"></span>
+        </div>
+        
+        <!-- Registration form -->
+        <form id="registerForm" class="space-y-4">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">E-mailadres</label>
+                <input type="email" id="email" name="email" required
+                       class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-azulBlue sm:text-sm">
+            </div>
 
-        <label for="username">Gebruikersnaam*</label>
-        <input type="text" id="username" name="username" required>
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Gebruikersnaam</label>
+                <input type="text" id="username" name="username" required
+                       class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-azulBlue sm:text-sm">
+            </div>
 
-        <label for="password">Wachtwoord*</label>
-        <input type="password" id="password" name="password" required>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Wachtwoord</label>
+                    <input type="password" id="password" name="password" required
+                           class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-azulBlue sm:text-sm">
+                </div>
 
-        <label for="confirmPassword">Bevestig Wachtwoord*</label>
-        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                <div>
+                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Bevestig Wachtwoord</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required
+                           class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-azulBlue sm:text-sm">
+                </div>
+            </div>
 
-        <label for="lastVisit">Laatste verblijf in Portugal</label>
-        <input type="date" id="lastVisit" name="lastVisit">
+            <div>
+                <label for="lastVisit" class="block text-sm font-medium text-gray-700 mb-1">
+                    Laatste verblijf in Portugal
+                    <span class="text-xs text-gray-500">(optioneel)</span>
+                </label>
+                <input type="date" id="lastVisit" name="lastVisit"
+                       class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-azulBlue sm:text-sm">
+            </div>
 
-        <div id="errorMessage" class="error"></div>
+            <div id="errorMessage" class="error text-red-500 text-sm min-h-[24px]"></div>
 
-        <button type="submit">Registreer</button>
-    </form>
+            <button type="submit"
+                    class="btn-hover w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-azulBlue focus:outline-none">
+                Registreer
+            </button>
+        </form>
 
-    <div class="back-to-index">
-        <p><a href="index.html" class="back-button">Terug naar startpagina</a></p>
+        <div class="flex justify-between items-center mt-8 pt-4 border-t border-gray-200">
+            <a href="login.html" 
+               class="text-sm text-azulBlue hover:text-azulAccent transition-colors duration-300">
+                Terug naar login
+            </a>
+            <a href="index.html"
+               class="text-sm text-azulBlue hover:text-azulAccent transition-colors duration-300">
+                Terug naar home
+            </a>
+        </div>
+        
+        <!-- Decorative pattern at the bottom -->
+        <div class="w-full h-2 flex mt-4">
+            <div class="w-1/5 h-full bg-azulTile1"></div>
+            <div class="w-1/5 h-full bg-azulTile2"></div>
+            <div class="w-1/5 h-full bg-azulTile3"></div>
+            <div class="w-1/5 h-full bg-azulTile4"></div>
+            <div class="w-1/5 h-full bg-azulTile5"></div>
+        </div>
     </div>
-</div>
-<script src="js/register.js"></script>
+    <script src="js/register.js"></script>
 </body>
 </html>

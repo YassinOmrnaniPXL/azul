@@ -2,33 +2,143 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
-    <link rel="stylesheet" href="css/login.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welkom bij Azul</title>
+    <!-- Add TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Expanded color palette inspired by Azul tiles
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                azulBlue: '#2a5b9c', 
+                azulCream: '#fdf6e3',
+                azulAccent: '#e5a04f',
+                azulTile1: '#d95454', // red tile
+                azulTile2: '#5254d9', // deep blue tile
+                azulTile3: '#54d978', // green tile
+                azulTile4: '#c154d9', // purple tile
+                azulTile5: '#d9c154', // yellow tile
+              },
+              fontFamily: {
+                'display': ['Playfair Display', 'serif'],
+                'sans': ['Raleway', 'sans-serif'],
+              },
+              animation: {
+                'float': 'float 6s ease-in-out infinite',
+                'scale': 'scale 5s ease-in-out infinite',
+              },
+              keyframes: {
+                float: {
+                  '0%, 100%': { transform: 'translateY(0)' },
+                  '50%': { transform: 'translateY(-10px)' },
+                },
+                scale: {
+                  '0%, 100%': { transform: 'scale(1)' },
+                  '50%': { transform: 'scale(1.05)' },
+                },
+              },
+            }
+          }
+        }
+      </script>
+    <style>
+        /* Import Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@300;400;600&display=swap');
+        
+        /* Solid background instead of mosaic pattern */
+        body {
+            background-color: #f8f5ee;
+        }
+
+        /* Content styling without backdrop blur */
+        .blurred-content {
+            background-color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Decorative Tiles */
+        .decorative-tile {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+            transform: rotate(var(--rotation));
+            animation: float 5s ease-in-out infinite;
+            animation-delay: var(--delay);
+        }
+        
+        /* Animation for content appearance */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+    </style>
 </head>
-<body>
-<div class="form-container">
-    <h2>Inloggen</h2>
-    <form id="loginForm">
-        <label for="email">E-mailadres*</label>
-        <input type="email" id="email" name="email" required>
+<body class="min-h-screen relative overflow-x-hidden">
+    <!-- Decorative Floating Tiles -->
+    <div class="decorative-tile bg-azulTile1" style="top: 15%; left: 10%; --rotation: 15deg; --delay: 0s;"></div>
+    <div class="decorative-tile bg-azulTile2" style="top: 70%; left: 5%; --rotation: -10deg; --delay: 0.5s;"></div>
+    <div class="decorative-tile bg-azulTile3" style="top: 20%; right: 10%; --rotation: 5deg; --delay: 1s;"></div>
+    <div class="decorative-tile bg-azulTile4" style="top: 80%; right: 15%; --rotation: -5deg; --delay: 1.5s;"></div>
+    <div class="decorative-tile bg-azulTile5" style="top: 50%; left: 90%; --rotation: 12deg; --delay: 2s;"></div>
+    
+    <div class="flex items-center justify-center min-h-screen py-12 px-4">
+        <div class="blurred-content p-8 md:p-12 rounded-xl shadow-xl max-w-2xl text-center border-4 border-azulBlue relative z-10 mx-auto">
+            <!-- Logo/Title -->
+            <h1 class="fade-in text-5xl md:text-6xl font-bold text-azulBlue mb-4 font-display tracking-wide">
+                AZUL
+            </h1>
+            <p class="fade-in delay-100 text-xl text-azulAccent font-light italic font-display mb-8">Het spel van koninklijke tegels</p>
+            
+            <!-- Image with subtle animation -->
+            <div class="fade-in delay-200 max-w-md mx-auto mb-8 transform hover:scale-105 transition-transform duration-500">
+                <img src="images/azul_game_image.jpg" alt="Azul Bordspel" class="w-full rounded-lg shadow-lg border-2 border-azulAccent"> 
+                <!-- Replace src with your actual image -->
+            </div>
 
-        <label for="password">Wachtwoord*</label>
-        <input type="password" id="password" name="password" required>
+            <!-- Game Description -->
+            <p class="fade-in delay-300 text-lg text-gray-800 mb-8 leading-relaxed">
+                <span class="font-semibold">Azul</span> is een prachtig abstract strategiespel geïnspireerd door Portugese tegels. 
+                Spelers verzamelen kleurrijke tegels om patronen te voltooien en het koninklijk paleis van Evora te versieren. 
+                Met elegante mechanismen en tactische diepgang, biedt Azul een meeslepende ervaring voor zowel nieuwe als ervaren spelers.
+            </p>
 
-        <div id="errorMessage" class="error"></div>
+            <!-- Call to Action Button with animation -->
+            <a href="login.html" 
+               class="fade-in delay-400 inline-block py-3 px-8 border-2 border-azulBlue rounded-lg shadow-md text-lg font-medium text-white bg-azulBlue hover:bg-white hover:text-azulBlue transition-all duration-300 transform hover:-translate-y-1">
+                Login om te Spelen
+            </a>
+            
+            <div class="fade-in delay-500 mt-8 flex justify-center">
+                <a href="register.html" class="text-azulBlue hover:text-azulAccent transition-colors duration-300 mr-6">
+                    Registreren
+                </a>
+                <a href="team.html"
+                   class="text-azulBlue hover:text-azulAccent transition-colors duration-300">
+                    Ontmoet het Team
+                </a>
+            </div>
 
-        <button type="submit">Inloggen</button>
-
-        <div class="register-link">
-            <p>Nog geen account? <a href="register.html">Registreer hier</a></p>
+            <!-- Decorative footer pattern -->
+            <div class="absolute bottom-0 left-0 right-0 h-4 bg-azulBlue rounded-b-lg opacity-60"></div>
         </div>
-    </form>
-
-    <div class="team-link">
-        <p><a href="team.html" class="team-button">Bekijk ons team</a></p>
     </div>
-</div>
-
-<script src="js/login.js"></script>
 </body>
 </html>

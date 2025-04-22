@@ -2,32 +2,204 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Ons Team</title>
-    <link rel="stylesheet" href="css/team.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ons Team | Azul</title>
+    <!-- Add TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Extended Azul color palette
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                azulBlue: '#2a5b9c',
+                azulCream: '#fdf6e3',
+                azulAccent: '#e5a04f',
+                azulTile1: '#d95454', // red tile
+                azulTile2: '#5254d9', // deep blue tile
+                azulTile3: '#54d978', // green tile
+                azulTile4: '#c154d9', // purple tile
+                azulTile5: '#d9c154', // yellow tile
+              },
+              fontFamily: {
+                'display': ['Playfair Display', 'serif'],
+                'sans': ['Raleway', 'sans-serif'],
+              },
+              animation: {
+                'float': 'float 6s ease-in-out infinite',
+              },
+              keyframes: {
+                float: {
+                  '0%, 100%': { transform: 'translateY(0)' },
+                  '50%': { transform: 'translateY(-10px)' },
+                },
+              },
+            }
+          }
+        }
+      </script>
+    <style>
+        /* Import Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@300;400;600&display=swap');
+        
+        /* Solid background instead of mosaic pattern */
+        body {
+            background-color: #f8f5ee;
+        }
+        
+        /* Glass effect - simple white background */
+        .glass-effect {
+            background: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Team member card animation */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .team-member {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .team-member:nth-child(1) { animation-delay: 0.2s; }
+        .team-member:nth-child(2) { animation-delay: 0.4s; }
+        .team-member:nth-child(3) { animation-delay: 0.6s; }
+        
+        /* Portuguese tile pattern border */
+        .tile-border {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tile-border::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: 
+                repeating-linear-gradient(0deg, 
+                    transparent, transparent 15px, 
+                    #e5a04f 15px, #e5a04f 16px),
+                repeating-linear-gradient(90deg, 
+                    transparent, transparent 15px, 
+                    #e5a04f 15px, #e5a04f 16px);
+            border-radius: 1rem;
+            z-index: -1;
+        }
+        
+        /* Title underline effect */
+        .fancy-underline {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .fancy-underline::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, #2a5b9c, #e5a04f);
+            transform: translateX(-50%);
+            border-radius: 3px;
+        }
+    </style>
 </head>
-<body>
+<body class="min-h-screen font-sans py-12 px-4">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header section -->
+        <div class="text-center mb-16">
+            <a href="index.html" class="inline-block mb-2 text-azulBlue hover:text-azulAccent transition-colors duration-300">
+                <span class="text-2xl font-display">AZUL</span>
+            </a>
+            <h1 class="text-5xl font-bold text-azulBlue mb-4 font-display fancy-underline">Team 04</h1>
+            <p class="text-lg text-gray-700 max-w-2xl mx-auto mt-8">
+                Ontmoet het team achter deze implementatie van Azul. Onze ontwikkelaars combineren passie 
+                voor bordspellen met technische expertise om u deze digitale versie te brengen.
+            </p>
+        </div>
 
-<h1>Team 04</h1>
+        <!-- Team container -->
+        <div class="team-container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 max-w-5xl mx-auto mb-16">
+            
+            <!-- Team Member 1 -->
+            <div class="team-member relative group">
+                <div class="tile-border bg-white p-6 rounded-xl shadow-lg text-center group-hover:shadow-xl transition-all duration-300">
+                    <div class="relative w-40 h-40 mx-auto mb-4 overflow-hidden rounded-full border-4 border-azulBlue transform transition-transform group-hover:scale-105">
+                        <img src="images/Default_pfp.jpg" alt="Metehan Karakoruk" class="w-full h-full object-cover">
+                        <!-- Colored overlay on hover -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-azulTile2 to-transparent opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-azulBlue mb-1 font-display">Metehan Karakoruk</h3>
+                    <p class="text-gray-600 mb-3">Student</p>
+                    <div class="h-1 w-16 bg-azulAccent mx-auto rounded-full"></div>
+                    <p class="mt-4 text-gray-700 text-sm">
+                        Fullstack Developer.
+                    </p>
+                </div>
+            </div>
 
-<div class="team-container">
-    <div class="team-member">
-        <img src="images/Default_pfp.jpg" alt="Naam 1">
-        <h3>Metehan Karakoruk</h3>
-        <p>Student</p>
+            <!-- Team Member 2 -->
+            <div class="team-member relative group">
+                <div class="tile-border bg-white p-6 rounded-xl shadow-lg text-center group-hover:shadow-xl transition-all duration-300">
+                    <div class="relative w-40 h-40 mx-auto mb-4 overflow-hidden rounded-full border-4 border-azulBlue transform transition-transform group-hover:scale-105">
+                        <img src="images/Default_pfp.jpg" alt="Mirthe Reynders" class="w-full h-full object-cover">
+                        <!-- Colored overlay on hover -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-azulTile4 to-transparent opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-azulBlue mb-1 font-display">Mirthe Reynders</h3>
+                    <p class="text-gray-600 mb-3">Student</p>
+                    <div class="h-1 w-16 bg-azulAccent mx-auto rounded-full"></div>
+                    <p class="mt-4 text-gray-700 text-sm">
+                        Fullstack Developer.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Team Member 3 -->
+            <div class="team-member relative group">
+                <div class="tile-border bg-white p-6 rounded-xl shadow-lg text-center group-hover:shadow-xl transition-all duration-300">
+                    <div class="relative w-40 h-40 mx-auto mb-4 overflow-hidden rounded-full border-4 border-azulBlue transform transition-transform group-hover:scale-105">
+                        <img src="images/Default_pfp.jpg" alt="Yassin Omrani" class="w-full h-full object-cover">
+                        <!-- Colored overlay on hover -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-azulTile3 to-transparent opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-azulBlue mb-1 font-display">Yassin Omrnani</h3>
+                    <p class="text-gray-600 mb-3">Student</p>
+                    <div class="h-1 w-16 bg-azulAccent mx-auto rounded-full"></div>
+                    <p class="mt-4 text-gray-700 text-sm">
+                        Fullstack Developer.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom navigation -->
+        <div class="glass-effect max-w-md mx-auto p-4 rounded-lg flex justify-center space-x-8">
+            <a href="index.html"
+               class="text-azulBlue hover:text-azulAccent transition-colors duration-300 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                </svg>
+                Home
+            </a>
+            <a href="login.html" 
+               class="text-azulBlue hover:text-azulAccent transition-colors duration-300 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                Login
+            </a>
+        </div>
     </div>
-
-    <div class="team-member">
-        <img src="images/Default_pfp.jpg" alt="Naam 2">
-        <h3>Mirthe Reynders</h3>
-        <p>Student</p>
-    </div>
-
-    <div class="team-member">
-        <img src="images/Default_pfp.jpg" alt="Naam 3">
-        <h3>Yassin Omrnani</h3>
-        <p>Student</p>
-    </div>
-</div>
-
 </body>
 </html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Azul</title>
+    <!-- Add TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Extended Azul color palette
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                azulBlue: '#2a5b9c', 
+                azulCream: '#fdf6e3', 
+                azulAccent: '#e5a04f',
+                azulTile1: '#d95454', // red tile
+                azulTile2: '#5254d9', // deep blue tile
+                azulTile3: '#54d978', // green tile
+                azulTile4: '#c154d9', // purple tile
+                azulTile5: '#d9c154', // yellow tile
+              },
+              fontFamily: {
+                'display': ['Playfair Display', 'serif'],
+                'sans': ['Raleway', 'sans-serif'],
+              },
+            }
+          }
+        }
+      </script>
+    <style>
+        /* Import Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@300;400;600&display=swap');
+        
+        /* Solid background instead of mosaic pattern */
+        body {
+            background-color: #f8f5ee;
+        }
+        
+        /* Animation for form appearance */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-animation {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        
+        /* Form container without glass effect */
+        .glass-container {
+            background: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Input focus effect */
+        .focus-ring {
+            transition: all 0.3s ease;
+        }
+        
+        .focus-ring:focus {
+            box-shadow: 0 0 0 3px rgba(42, 91, 156, 0.3);
+        }
+        
+        /* Button hover effect */
+        .btn-hover {
+            transition: all 0.3s ease;
+            background-size: 200% auto;
+            background-image: linear-gradient(to right, #2a5b9c 0%, #3a6bac 50%, #2a5b9c 100%);
+        }
+        
+        .btn-hover:hover {
+            background-position: right center;
+            transform: translateY(-2px);
+        }
+        
+        /* Decorative corner patterns */
+        .corner-pattern {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-image: 
+                linear-gradient(45deg, transparent 48%, #e5a04f 48%, #e5a04f 52%, transparent 52%),
+                linear-gradient(-45deg, transparent 48%, #e5a04f 48%, #e5a04f 52%, transparent 52%);
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen font-sans">
+    <div class="form-animation glass-container p-8 rounded-xl shadow-lg w-full max-w-md border-2 border-azulBlue mx-4 relative">
+        <!-- Decorative corner patterns -->
+        <div class="corner-pattern top-0 left-0 rounded-tl-xl"></div>
+        <div class="corner-pattern top-0 right-0 rounded-tr-xl"></div>
+        <div class="corner-pattern bottom-0 left-0 rounded-bl-xl"></div>
+        <div class="corner-pattern bottom-0 right-0 rounded-br-xl"></div>
+        
+        <!-- Form header -->
+        <a href="index.html" class="block text-center mb-1 text-azulBlue hover:text-azulAccent transition-colors duration-300">
+            <span class="text-xl font-display">AZUL</span>
+        </a>
+        <h2 class="text-3xl font-bold mb-6 text-center text-azulBlue font-display">Inloggen</h2>
+        
+        <!-- Login form -->
+        <form id="loginForm" class="space-y-5">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">E-mailadres</label>
+                <input type="email" id="email" name="email" required
+                       class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-azulBlue sm:text-sm">
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Wachtwoord</label>
+                <input type="password" id="password" name="password" required
+                       class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-azulBlue sm:text-sm">
+            </div>
+
+            <div id="errorMessage" class="error text-red-500 text-sm min-h-[24px]"></div>
+
+            <button type="submit"
+                    class="btn-hover w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-azulBlue focus:outline-none">
+                Inloggen
+            </button>
+
+            <div class="register-link text-center text-sm text-gray-600">
+                <p>Nog geen account? <a href="register.html" class="font-medium text-azulBlue hover:text-azulAccent transition-colors duration-300">Registreer hier</a></p>
+            </div>
+        </form>
+
+        <div class="flex justify-between items-center mt-8 pt-4 border-t border-gray-200">
+            <a href="index.html" 
+               class="text-sm text-azulBlue hover:text-azulAccent transition-colors duration-300">
+                Terug naar home
+            </a>
+            <a href="team.html"
+               class="text-sm text-azulBlue hover:text-azulAccent transition-colors duration-300">
+                Bekijk ons team
+            </a>
+        </div>
+    </div>
+
+    <script src="js/login.js"></script>
+</body>
+</html> 
