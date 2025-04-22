@@ -51,6 +51,14 @@ internal class TableManager : ITableManager
 
     public void LeaveTable(Guid tableId, User user)
     {
+        var table = _tableRepository.Get(tableId);
+        if (table == null)
+        {
+            throw new ArgumentException($"Table with id {tableId} not found.");
+        }
+
+
+        //table.Leave(user);
         throw new NotImplementedException();
     }
 
