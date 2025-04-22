@@ -1,10 +1,176 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azul - Lobby</title>
+    <!-- Add TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Expanded color palette inspired by Azul tiles
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                azulBlue: '#2a5b9c', 
+                azulCream: '#fdf6e3',
+                azulAccent: '#e5a04f',
+                azulTile1: '#d95454', // red tile
+                azulTile2: '#5254d9', // deep blue tile
+                azulTile3: '#54d978', // green tile
+                azulTile4: '#c154d9', // purple tile
+                azulTile5: '#d9c154', // yellow tile
+              },
+              fontFamily: {
+                'display': ['Playfair Display', 'serif'],
+                'sans': ['Raleway', 'sans-serif'],
+              },
+              animation: {
+                'float': 'float 6s ease-in-out infinite',
+                'scale': 'scale 5s ease-in-out infinite',
+              },
+              keyframes: {
+                float: {
+                  '0%, 100%': { transform: 'translateY(0)' },
+                  '50%': { transform: 'translateY(-10px)' },
+                },
+                scale: {
+                  '0%, 100%': { transform: 'scale(1)' },
+                  '50%': { transform: 'scale(1.05)' },
+                },
+              },
+            }
+          }
+        }
+      </script>
+    <style>
+        /* Import Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@300;400;600&display=swap');
+        
+        /* Solid background instead of mosaic pattern */
+        body {
+            background-color: #f8f5ee;
+        }
+
+        /* Content styling without backdrop blur */
+        .blurred-content {
+            background-color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Decorative Tiles */
+        .decorative-tile {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+            transform: rotate(var(--rotation));
+            animation: float 5s ease-in-out infinite;
+            animation-delay: var(--delay);
+        }
+        
+        /* Animation for content appearance */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+
+        /* Tile selection styles */
+        .player-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .player-option:hover {
+            transform: translateY(-5px);
+        }
+        
+        .player-option.selected {
+            border-color: #2a5b9c;
+            background-color: rgba(42, 91, 156, 0.1);
+        }
+    </style>
 </head>
-<body>
-<h1>Welkom bij de lobby</h1>
+<body class="min-h-screen relative overflow-x-hidden">
+    <!-- Decorative Floating Tiles -->
+    <div class="decorative-tile bg-azulTile1" style="top: 15%; left: 10%; --rotation: 15deg; --delay: 0s;"></div>
+    <div class="decorative-tile bg-azulTile2" style="top: 70%; left: 5%; --rotation: -10deg; --delay: 0.5s;"></div>
+    <div class="decorative-tile bg-azulTile3" style="top: 20%; right: 10%; --rotation: 5deg; --delay: 1s;"></div>
+    <div class="decorative-tile bg-azulTile4" style="top: 80%; right: 15%; --rotation: -5deg; --delay: 1.5s;"></div>
+    <div class="decorative-tile bg-azulTile5" style="top: 50%; left: 90%; --rotation: 12deg; --delay: 2s;"></div>
+    
+    <div class="flex items-center justify-center min-h-screen py-12 px-4">
+        <div class="blurred-content p-8 md:p-12 rounded-xl shadow-xl max-w-2xl text-center border-4 border-azulBlue relative z-10 mx-auto">
+            <!-- Logo/Title -->
+            <h1 class="fade-in text-4xl md:text-5xl font-bold text-azulBlue mb-4 font-display tracking-wide">
+                AZUL LOBBY
+            </h1>
+            <p class="fade-in delay-100 text-xl text-azulAccent font-light italic font-display mb-8">Kies het aantal spelers</p>
+            
+            <!-- Player Selection Options -->
+            <div class="fade-in delay-200 grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- 2 Players Option -->
+                <div id="option-2" class="player-option border-2 p-4 rounded-lg shadow-md text-center">
+                    <div class="bg-azulTile1 w-16 h-16 mx-auto mb-3 rounded-lg flex items-center justify-center text-white text-2xl font-bold">2</div>
+                    <h3 class="font-display text-lg font-semibold">2 Spelers</h3>
+                    <p class="text-sm text-gray-600 mt-2">Ideaal voor een snelle partij</p>
+                </div>
+                
+                <!-- 3 Players Option -->
+                <div id="option-3" class="player-option border-2 p-4 rounded-lg shadow-md text-center">
+                    <div class="bg-azulTile3 w-16 h-16 mx-auto mb-3 rounded-lg flex items-center justify-center text-white text-2xl font-bold">3</div>
+                    <h3 class="font-display text-lg font-semibold">3 Spelers</h3>
+                    <p class="text-sm text-gray-600 mt-2">Meer spelers, meer strategieën</p>
+                </div>
+                
+                <!-- 4 Players Option -->
+                <div id="option-4" class="player-option border-2 p-4 rounded-lg shadow-md text-center">
+                    <div class="bg-azulTile4 w-16 h-16 mx-auto mb-3 rounded-lg flex items-center justify-center text-white text-2xl font-bold">4</div>
+                    <h3 class="font-display text-lg font-semibold">4 Spelers</h3>
+                    <p class="text-sm text-gray-600 mt-2">Volledige tafel voor maximaal plezier</p>
+                </div>
+            </div>
+            
+            <!-- Confirm Button -->
+            <button id="joinTableBtn" class="fade-in delay-300 inline-block py-3 px-8 border-2 border-azulBlue rounded-lg shadow-md text-lg font-medium text-white bg-azulBlue hover:bg-white hover:text-azulBlue transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                Deelnemen aan Spel
+            </button>
+            
+            <!-- Status Messages -->
+            <div id="statusMessage" class="fade-in delay-400 mt-6 p-4 rounded-lg hidden"></div>
+            
+            <!-- Table Status (shown after joining) -->
+            <div id="tableStatus" class="fade-in delay-500 mt-6 p-4 rounded-lg border-2 border-azulAccent hidden">
+                <h3 class="text-xl font-display font-semibold text-azulBlue mb-2">Tafelstatus</h3>
+                <div id="tableDetails" class="text-center">
+                    <!-- Table details will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Error Message -->
+            <div id="errorMessage" class="fade-in delay-400 mt-4 text-azulTile1 hidden"></div>
+
+            <!-- Decorative footer pattern -->
+            <div class="absolute bottom-0 left-0 right-0 h-4 bg-azulBlue rounded-b-lg opacity-60"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/lobby.js"></script>
 </body>
 </html>
