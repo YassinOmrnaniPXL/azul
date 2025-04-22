@@ -9,6 +9,7 @@ namespace Azul.Core.PlayerAggregate;
 internal class HumanPlayer : IPlayer
 {
     public HumanPlayer(Guid userId, string name, DateOnly? lastVisitToPortugal)
+        : base(userId, name, lastVisitToPortugal)
     {
 
     }
