@@ -8,6 +8,8 @@ internal class TableFactory : ITableFactory
 {
     public ITable CreateNewForUser(User user, ITablePreferences preferences)
     {
-        throw new NotImplementedException();
+        var table = new Table(Guid.NewGuid(), preferences);
+        table.Join(user);
+        return table;
     }
 }
