@@ -33,14 +33,15 @@ internal class TableManager : ITableManager
         var availableTables = _tableRepository.FindTablesWithAvailableSeats(preferences);
 
         ITable table;
+
         if (availableTables == null || !availableTables.Any())
         {
-            table = _tableFactory.CreateNewForUser(user, preferences);
+            table = _tableFactory.CreateNewForUser(user, preferences); // creert nieuwe tafel als er geen bestaande zijn
             _tableRepository.Add(table);
         }
         else
         {
-            table = availableTables.First();
+            table = availableTables.First(); // anders joint user bestaande tafel, met dezelfde preferences
             table.Join(user);
         }
 
@@ -50,14 +51,18 @@ internal class TableManager : ITableManager
     public void LeaveTable(Guid tableId, User user)
     {
         var table = _tableRepository.Get(tableId);
+
         if (table == null)
         {
-            throw new ArgumentException($"Table with id {tableId} not found.");
+            throw new ArgumentException($"Table with id {tableId} not found."); // zeker maken dat tafel nog bestaat
         }
 
+        table.Leave(user.Id);
 
-        //table.Leave(user);
-        throw new NotImplementedException();
+        if (!table.SeatedPlayers.Any())
+        {
+            _tableRepository.Remove(tableId); // tafel verwijderen als speler de laatste aan de tafel is
+        }
     }
 
 
