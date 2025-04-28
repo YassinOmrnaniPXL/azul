@@ -27,5 +27,14 @@ namespace Azul.Core.TableAggregate.Contracts
         /// Only tables that match the given <paramref name="preferences"/> are returned.
         /// </summary>
         IList<ITable> FindTablesWithAvailableSeats(ITablePreferences preferences);
+
+
+        // CHAT IK HEB DIT TOEGEVOEG
+        /// <summary>
+        /// Updates a table in storage.
+        /// </summary>
+        /// <param name="table">The table to update</param>
+        /// <exception cref="DataNotFoundException">When no table is found</exception>
+        void Update(ITable table);
     }
 }

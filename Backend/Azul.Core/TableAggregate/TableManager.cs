@@ -68,8 +68,32 @@ internal class TableManager : ITableManager
 
     public IGame StartGameForTable(Guid tableId)
     {
-        throw new NotImplementedException();
+        var table = _tableRepository.Get(tableId);
+
+        if (table == null)
+        {
+            throw new ArgumentException($"Table with id {tableId} not found.");
+        }
+
+        if (table.SeatedPlayers.Count < table.Preferences.NumberOfPlayers)
+        {
+            throw new InvalidOperationException("Cannot start game: not enough players at the table.");
+        }
+
+        // Maak nieuw Game object aan vanuit de table (gebruik jouw CreateNewForTable!)
+        IGame newGame = _gameFactory.CreateNewForTable(table);
+
+        // Koppel de nieuwe game aan de tafel
+        table.GameId = newGame.Id;
+
+        // Save nieuwe game en update de tafel
+        _gameRepository.Add(newGame);
+        _tableRepository.Update(table);
+
+        return newGame;
     }
+
+
 
     public void FillWithArtificialPlayers(Guid tableId, User user)
     {

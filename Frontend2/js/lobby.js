@@ -6,75 +6,84 @@ document.addEventListener("DOMContentLoaded", () => {
     const tableStatus = document.getElementById('tableStatus');
     const tableDetails = document.getElementById('tableDetails');
     const errorMessage = document.getElementById('errorMessage');
-    
-    // Backend API URL - may need to be updated based on environment
-    const backendUrl = 'https://localhost:5051';
-    
+    const leaveTableBtn = document.getElementById('leaveTableBtn');
+    const actionButtons = document.getElementById('actionButtons');
+
+    // Backend API URL
+    const backendUrl = 'https://localhost:5051'; // Zorg dat backend correct draait!
+
     // Store selected player count
     let selectedPlayerCount = null;
-    
-    // Check if user is authenticated
+    let currentTableId = null;
+
     checkAuthStatus();
-    
-    // Add selection functionality to player options
+
     playerOptions.forEach(option => {
         option.addEventListener('click', () => {
-            // Clear previous selection
             playerOptions.forEach(opt => opt.classList.remove('selected'));
-            
-            // Apply selection to clicked option
             option.classList.add('selected');
-            
-            // Get player count from option id (e.g., "option-2" -> 2)
             selectedPlayerCount = parseInt(option.id.split('-')[1]);
-            
-            // Enable join button
             joinTableBtn.disabled = false;
         });
     });
-    
-    // Join table button click handler
+
     joinTableBtn.addEventListener('click', async () => {
         if (!selectedPlayerCount) {
             showError("Selecteer eerst het aantal spelers");
             return;
         }
-        
         await joinOrCreateTable(selectedPlayerCount);
     });
-    
-    // Function to check if user is authenticated
+
+    leaveTableBtn.addEventListener('click', async () => {
+        if (!currentTableId) return;
+
+        const token = sessionStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            const response = await fetch(`${backendUrl}/api/Tables/${currentTableId}/leave`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                console.log("Succesvol tafel verlaten.");
+                window.location.reload(); // Terug naar start
+            } else {
+                showError("Kon de tafel niet verlaten.");
+            }
+        } catch (error) {
+            console.error("Error leaving table:", error);
+        }
+    });
+
     function checkAuthStatus() {
         const token = sessionStorage.getItem('token');
-        
         if (!token) {
-            // Redirect to login page if not authenticated
             window.location.href = 'login.html';
-            return;
         }
     }
-    
-    // Function to join or create a table
+
     async function joinOrCreateTable(playerCount) {
         try {
-            // Get authentication token
             const token = sessionStorage.getItem('token');
-            
             if (!token) {
                 showError("U bent niet ingelogd. Log in om een spel te starten.");
                 return;
             }
-            
-            // Show loading state
+
             joinTableBtn.disabled = true;
             joinTableBtn.textContent = 'Even geduld...';
-            
-            // Prepare request payload
+
             const payload = {
-                numberOfPlayers: playerCount
+                numberOfPlayers: playerCount,
+                numberOfArtificialPlayers: 0,
+                numberOfFactoryDisplays: 0
             };
-            
-            // Send request to join or create table
+
             const response = await fetch(`${backendUrl}/api/Tables/join-or-create`, {
                 method: 'POST',
                 headers: {
@@ -83,13 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
                 body: JSON.stringify(payload)
             });
-            
-            // Reset button state
+
             joinTableBtn.textContent = 'Deelnemen aan Spel';
-            
+
             if (response.ok) {
                 const data = await response.json();
                 displayTableJoined(data);
+                currentTableId = data.id;
+                startTablePolling();
             } else if (response.status === 401) {
                 showError("Uw sessie is verlopen. Log opnieuw in.");
                 setTimeout(() => {
@@ -113,25 +123,31 @@ document.addEventListener("DOMContentLoaded", () => {
             joinTableBtn.textContent = 'Deelnemen aan Spel';
         }
     }
-    
-    // Function to display table joined status
+
     function displayTableJoined(tableData) {
-        // Hide join button and show table status
         joinTableBtn.classList.add('hidden');
-        
-        // Set status message color and text
         statusMessage.classList.remove('hidden');
         statusMessage.classList.add('bg-azulTile3', 'bg-opacity-20', 'text-azulTile3');
         statusMessage.textContent = "U bent succesvol aan een tafel toegevoegd!";
-        
-        // Show table status container
         tableStatus.classList.remove('hidden');
-        
-        // Calculate filled seats
-        const filledSeats = tableData.players ? tableData.players.length : 1;
-        const totalSeats = tableData.maxPlayers || selectedPlayerCount;
-        
-        // Create table details HTML
+        actionButtons.classList.remove('hidden');
+
+        updateTableStatus(tableData);
+    }
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.classList.remove('hidden');
+
+        setTimeout(() => {
+            errorMessage.classList.add('hidden');
+        }, 5000);
+    }
+
+    function updateTableStatus(tableData) {
+        const filledSeats = tableData.seatedPlayers ? tableData.seatedPlayers.length : 1;
+        const totalSeats = tableData.preferences ? tableData.preferences.numberOfPlayers : selectedPlayerCount;
+
         const tableDetailsHTML = `
             <div class="mb-4">
                 <div class="flex justify-center items-center mb-2">
@@ -149,22 +165,49 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <p class="text-sm text-gray-600">Het spel begint automatisch zodra alle spelers zijn toegevoegd.</p>
         `;
-        
-        // Update table details
+
         tableDetails.innerHTML = tableDetailsHTML;
-        
-        // Set up polling to check for updates (optional enhancement)
-        // setupTableStatusPolling(tableData.id);
     }
-    
-    // Function to show error message
-    function showError(message) {
-        errorMessage.textContent = message;
-        errorMessage.classList.remove('hidden');
-        
-        // Hide error after 5 seconds
-        setTimeout(() => {
-            errorMessage.classList.add('hidden');
-        }, 5000);
+
+    function startTablePolling() {
+        if (!currentTableId) {
+            console.error("Geen tableId gevonden voor polling.");
+            return;
+        }
+
+        const pollInterval = 3000; // 3 seconden
+
+        setInterval(async () => {
+            const token = sessionStorage.getItem('token');
+            if (!token) {
+                console.error("Geen token gevonden tijdens polling.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${backendUrl}/api/Tables/${currentTableId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const tableData = await response.json();
+                    console.log("Tafel data:", tableData);
+
+                    updateTableStatus(tableData);
+
+                    if (tableData.gameId && tableData.gameId !== "00000000-0000-0000-0000-000000000000") {
+                        console.log("Spel gevonden! Redirecting naar game.html...");
+                        window.location.href = `game.html?gameId=${tableData.gameId}`;
+                    }
+                } else {
+                    console.error("Fout bij ophalen tafel:", response.status);
+                }
+            } catch (error) {
+                console.error("Error polling table:", error);
+            }
+        }, pollInterval);
     }
-}); 
+});

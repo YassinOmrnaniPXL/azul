@@ -45,4 +45,10 @@ internal class InMemoryTableRepository : ITableRepository
 
         // throw new System.NotImplementedException();
     }
+
+    // googly googly .net advanced clutch 1
+    public void Update(ITable table)
+    {
+        _tableDictionary.AddOrReplace(table.Id, table);
+    }
 }
