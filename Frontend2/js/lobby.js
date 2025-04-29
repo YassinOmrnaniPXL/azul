@@ -6,15 +6,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const tableStatus = document.getElementById('tableStatus');
     const tableDetails = document.getElementById('tableDetails');
     const errorMessage = document.getElementById('errorMessage');
-    const leaveTableBtn = document.getElementById('leaveTableBtn');
-    const actionButtons = document.getElementById('actionButtons');
 
-    // Backend API URL
-    const backendUrl = 'https://localhost:5051'; // Zorg dat backend correct draait!
+    const backendUrl = 'https://localhost:5051';
 
-    // Store selected player count
     let selectedPlayerCount = null;
     let currentTableId = null;
+    let previousPlayerNames = []; // ✨ opgeslagen vorige spelers
 
     checkAuthStatus();
 
@@ -33,31 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         await joinOrCreateTable(selectedPlayerCount);
-    });
-
-    leaveTableBtn.addEventListener('click', async () => {
-        if (!currentTableId) return;
-
-        const token = sessionStorage.getItem('token');
-        if (!token) return;
-
-        try {
-            const response = await fetch(`${backendUrl}/api/Tables/${currentTableId}/leave`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                console.log("Succesvol tafel verlaten.");
-                window.location.reload(); // Terug naar start
-            } else {
-                showError("Kon de tafel niet verlaten.");
-            }
-        } catch (error) {
-            console.error("Error leaving table:", error);
-        }
     });
 
     function checkAuthStatus() {
@@ -99,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await response.json();
                 displayTableJoined(data);
                 currentTableId = data.id;
+                previousPlayerNames = data.seatedPlayers.map(p => p.name);
                 startTablePolling();
             } else if (response.status === 401) {
                 showError("Uw sessie is verlopen. Log opnieuw in.");
@@ -130,7 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
         statusMessage.classList.add('bg-azulTile3', 'bg-opacity-20', 'text-azulTile3');
         statusMessage.textContent = "U bent succesvol aan een tafel toegevoegd!";
         tableStatus.classList.remove('hidden');
-        actionButtons.classList.remove('hidden');
 
         updateTableStatus(tableData);
     }
@@ -144,9 +116,28 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 5000);
     }
 
-    function updateTableStatus(tableData) {
+    function updateTableStatus(tableData, leaverName = null) {
         const filledSeats = tableData.seatedPlayers ? tableData.seatedPlayers.length : 1;
         const totalSeats = tableData.preferences ? tableData.preferences.numberOfPlayers : selectedPlayerCount;
+
+        // 🧠 Speler lijst opbouwen
+        let playerListHTML = '<ul class="text-gray-700 mb-4">';
+        if (tableData.seatedPlayers && tableData.seatedPlayers.length > 0) {
+            tableData.seatedPlayers.forEach(player => {
+                playerListHTML += `<li>👤 ${player.name}</li>`;
+            });
+        }
+        playerListHTML += '</ul>';
+
+        // ✨ Melding als iemand vertrokken is
+        let leaveNotificationHTML = '';
+        if (leaverName) {
+            leaveNotificationHTML = `
+                <div id="leaveNotification" class="text-azulTile1 font-semibold mb-4">
+                    ${leaverName} is vertrokken van de tafel.
+                </div>
+            `;
+        }
 
         const tableDetailsHTML = `
             <div class="mb-4">
@@ -157,16 +148,62 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
                 <p>spelers aan tafel</p>
             </div>
+
+            ${playerListHTML}
+            ${leaveNotificationHTML}
+
             <div class="mb-4">
                 <p class="text-sm text-azulAccent italic">Wachten op andere spelers...</p>
                 <div class="mt-3 relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div class="absolute top-0 left-0 h-full bg-azulBlue" style="width: ${(filledSeats/totalSeats*100)}%;"></div>
                 </div>
             </div>
-            <p class="text-sm text-gray-600">Het spel begint automatisch zodra alle spelers zijn toegevoegd.</p>
+            <p class="text-sm text-gray-600 mb-4">Het spel begint automatisch zodra alle spelers zijn toegevoegd.</p>
+
+            <button id="leaveTableBtn" class="mt-6 py-2 px-6 bg-azulTile1 text-white rounded-lg hover:bg-red-400 transition">
+                Tafel Verlaten
+            </button>
         `;
 
         tableDetails.innerHTML = tableDetailsHTML;
+
+        const leaveTableBtn = document.getElementById('leaveTableBtn');
+        leaveTableBtn.addEventListener('click', leaveTable);
+
+        // ✨ Automatisch melding laten verdwijnen na 3 sec
+        if (leaverName) {
+            setTimeout(() => {
+                const notification = document.getElementById('leaveNotification');
+                if (notification) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+    }
+
+    async function leaveTable() {
+        if (!currentTableId) return;
+
+        const token = sessionStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            const response = await fetch(`${backendUrl}/api/Tables/${currentTableId}/leave`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                console.log("Succesvol tafel verlaten.");
+                window.location.reload();
+            } else {
+                showError("Kon de tafel niet verlaten.");
+            }
+        } catch (error) {
+            console.error("Error leaving table:", error);
+        }
     }
 
     function startTablePolling() {
@@ -175,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const pollInterval = 3000; // 3 seconden
+        const pollInterval = 3000;
 
         setInterval(async () => {
             const token = sessionStorage.getItem('token');
@@ -196,7 +233,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     const tableData = await response.json();
                     console.log("Tafel data:", tableData);
 
-                    updateTableStatus(tableData);
+                    const currentNames = tableData.seatedPlayers.map(p => p.name);
+
+                    // ✨ Check wie vertrokken is
+                    const leaverName = previousPlayerNames.find(name => !currentNames.includes(name));
+                    previousPlayerNames = currentNames;
+
+                    updateTableStatus(tableData, leaverName);
 
                     if (tableData.gameId && tableData.gameId !== "00000000-0000-0000-0000-000000000000") {
                         console.log("Spel gevonden! Redirecting naar game.html...");
