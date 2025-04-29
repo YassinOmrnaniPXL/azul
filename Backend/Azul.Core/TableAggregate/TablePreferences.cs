@@ -13,7 +13,19 @@ namespace Azul.Core.TableAggregate
         [DefaultValue(0)]
         public int NumberOfArtificialPlayers { get; set; } = 0;
 
-        public int NumberOfFactoryDisplays { get; }
+        public int NumberOfFactoryDisplays
+        {
+            get
+            {
+                if (NumberOfPlayers < 2 || NumberOfPlayers > 4)
+                {
+                    throw new InvalidOperationException($"Unsupported player count: {NumberOfPlayers}");
+                }
+
+                return NumberOfPlayers * 2 + 1;
+            }
+        }
+
 
 
         //DO NOT CHANGE THE CODE BELOW, unless (maybe) when you are working on EXTRA requirements
