@@ -13,7 +13,7 @@ namespace Azul.Core.TableAggregate
         [DefaultValue(0)]
         public int NumberOfArtificialPlayers { get; set; } = 0;
 
-        public int NumberOfFactoryDisplays
+        public int NumberOfFactoryDisplays // aantal factories voor aantal spelers, 2 spelers zijn 5 rondjes, 3 = 7 en 4 = 9
         {
             get
             {
