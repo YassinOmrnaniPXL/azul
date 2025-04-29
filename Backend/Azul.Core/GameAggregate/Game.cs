@@ -24,8 +24,18 @@ internal class Game : IGame
         RoundNumber = 1;
         HasEnded = false;
 
-        // Bijv. kies de eerste speler als startspeler
-        PlayerToPlayId = players.First().Id;
+        PlayerToPlayId = players
+            .OrderByDescending(p => p.LastVisitToPortugal ?? DateOnly.MinValue)
+            .First().Id;
+
+        TileFactory.FillDisplays();
+
+        TileFactory.TableCenter.AddStartingTile();
+
+        foreach (var player in Players)
+        {
+            player.HasStartingTile = false;
+        }
     }
 
     public Guid Id { get; }
