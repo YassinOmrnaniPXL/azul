@@ -24,6 +24,27 @@ internal class GameFactory : IGameFactory
         var gameId = Guid.NewGuid();
         var players = table.SeatedPlayers.ToArray(); // van IReadOnlyList naar array
 
-        return new Game(gameId, _tileFactory, players);
+        var bag = new TileBag();
+        foreach (TileType tileType in Enum.GetValues(typeof(TileType)))
+        {
+            // TileType.StartingTile overslaan
+            if (tileType == TileType.StartingTile) continue;
+
+            // bag vullen
+            var tiles = Enumerable.Repeat(tileType, 20).ToList();
+            bag.AddTiles(tiles);
+        }
+        // tablecenter aanmaken
+        ITableCenter tableCenter = new TableCenter();
+
+        // 3. tilefactory vullen
+        int numberOfDisplays = table.Preferences.NumberOfFactoryDisplays;
+        var tileFactory = new TileFactory(numberOfDisplays, bag);
+
+        // 4. display vullen met tiles
+        tileFactory.FillDisplays();
+
+        // game maken en teruggeven
+        return new Game(gameId, tileFactory, players);
     }
 }

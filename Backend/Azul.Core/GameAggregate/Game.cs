@@ -24,15 +24,15 @@ internal class Game : IGame
         RoundNumber = 1;
         HasEnded = false;
 
-        PlayerToPlayId = players
+        PlayerToPlayId = players // kiest degene die het laatst naar portugal is geweest
             .OrderByDescending(p => p.LastVisitToPortugal ?? DateOnly.MinValue)
             .First().Id;
 
-        TileFactory.FillDisplays();
+        TileFactory.FillDisplays(); // displays vullen met tiles
 
-        TileFactory.TableCenter.AddStartingTile();
+        TileFactory.TableCenter.AddStartingTile(); // starting tile toevoegen
 
-        foreach (var player in Players)
+        foreach (var player in Players) // niemand mag starting tile hebben bij het begin
         {
             player.HasStartingTile = false;
         }

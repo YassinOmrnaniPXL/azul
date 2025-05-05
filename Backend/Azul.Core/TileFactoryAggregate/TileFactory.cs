@@ -4,29 +4,71 @@ namespace Azul.Core.TileFactoryAggregate;
 
 internal class TileFactory : ITileFactory
 {
+    private readonly int _numberOfDisplays;
+    private readonly ITileBag _tileBag;
     internal TileFactory(int numberOfDisplays, ITileBag bag)
     {
-       
+        _numberOfDisplays = numberOfDisplays;
+        _tileBag = bag ?? throw new ArgumentNullException(nameof(bag));
+        _displays = new List<IFactoryDisplay>(_numberOfDisplays); // NEW
+        TableCenter = new TableCenter();
+        UsedTiles = new List<TileType>();
+
+        for (int i = 0; i < _numberOfDisplays; i++)
+        {
+            _displays.Add(new FactoryDisplay(TableCenter));
+        }
     }
 
-    public ITileBag Bag => throw new NotImplementedException();
+    public ITileBag Bag => _tileBag;
 
-    public IReadOnlyList<IFactoryDisplay> Displays => throw new NotImplementedException();
+    private readonly List<IFactoryDisplay> _displays;
+    public IReadOnlyList<IFactoryDisplay> Displays => _displays;
 
-    public ITableCenter TableCenter => throw new NotImplementedException();
+    public ITableCenter TableCenter { get; }
+    public List<TileType> UsedTiles { get; }
+    public bool IsEmpty => !Displays.Any(d => d.Tiles.Any()) && !TableCenter.Tiles.Any();
 
-    public IReadOnlyList<TileType> UsedTiles => throw new NotImplementedException();
-
-    public bool IsEmpty => throw new NotImplementedException();
+    IReadOnlyList<TileType> ITileFactory.UsedTiles => UsedTiles;
 
     public void AddToUsedTiles(TileType tile)
     {
-        throw new NotImplementedException();
+        UsedTiles.Add(tile);
+        // throw new NotImplementedException();
     }
 
     public void FillDisplays()
     {
-        throw new NotImplementedException();
+        // wtf
+        // display leegmaken
+        _displays.Clear();
+
+        // gaat over elke rij van display die gevuld moet worden
+        for (int i = 0; i < _numberOfDisplays; i++)
+        {
+            var display = new FactoryDisplay(TableCenter);
+            IReadOnlyList<TileType> tiles;
+
+            if (!_tileBag.TryTakeTiles(4, out tiles))
+            {
+                if (UsedTiles.Any())
+                {
+                    _tileBag.AddTiles(UsedTiles);
+                    UsedTiles.Clear();
+                }
+
+                // als het niet lukt, bag vullen met usedtiles
+                if (!_tileBag.TryTakeTiles(4, out tiles))
+                {
+                    tiles = new List<TileType>();
+                }
+            }
+
+            // toevoegen aan display
+            display.AddTiles(tiles);
+            ((List<IFactoryDisplay>)Displays).Add(display);
+            // throw new NotImplementedException();
+        }
     }
 
     public IReadOnlyList<TileType> TakeTiles(Guid displayId, TileType tileType)

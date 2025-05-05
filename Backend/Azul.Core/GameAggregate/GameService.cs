@@ -8,13 +8,20 @@ namespace Azul.Core.GameAggregate;
 /// <inheritdoc cref="IGameService"/>
 internal class GameService : IGameService
 {
+
+    private readonly IGameRepository _gameRepository;
+
     public GameService(IGameRepository gameRepository)
     {
+        _gameRepository = gameRepository;
     }
+
     public IGame GetGame(Guid gameId)
     {
-        throw new NotImplementedException();
+        return _gameRepository.GetById(gameId);
+        // throw new NotImplementedException();
     }
+
     public void TakeTilesFromFactory(Guid gameId, Guid playerId, Guid displayId, TileType tileType)
     {
         throw new NotImplementedException();
