@@ -40,13 +40,11 @@ internal class TileFactory : ITileFactory
     public void FillDisplays()
     {
         // wtf
-        // display leegmaken
-        _displays.Clear();
 
         // gaat over elke rij van display die gevuld moet worden
         for (int i = 0; i < _numberOfDisplays; i++)
         {
-            var display = new FactoryDisplay(TableCenter);
+            var display = _displays[i];
             IReadOnlyList<TileType> tiles;
 
             if (!_tileBag.TryTakeTiles(4, out tiles))
@@ -63,7 +61,6 @@ internal class TileFactory : ITileFactory
                     tiles = new List<TileType>();
                 }
             }
-
             // toevoegen aan display
             display.AddTiles(tiles);
             ((List<IFactoryDisplay>)Displays).Add(display);
