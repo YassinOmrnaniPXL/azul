@@ -24,6 +24,32 @@ internal class Board : IBoard
             FloorLine[i] = new TileSpot();
         }
 
+        PatternLines = new IPatternLine[5];
+        for (int i = 0; i < 5; i++)
+        {
+            PatternLines[i] = new PatternLine(i + 1);
+        }
+
+        Wall = new TileSpot[5, 5];
+        TileType[] baseTypes = new[]
+        {
+        TileType.PlainBlue,
+        TileType.WhiteTurquoise,
+        TileType.BlackBlue,
+        TileType.PlainRed,
+        TileType.YellowRed
+        };
+
+        for (int row = 0; row < 5; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                int index = (col + row) % 5;
+                Wall[row, col] = new TileSpot(baseTypes[index]);
+            }
+        }
+
+
         // score 0 (staat in de test)
         Score = 0;
     }
