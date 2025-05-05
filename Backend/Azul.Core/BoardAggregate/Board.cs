@@ -16,20 +16,21 @@ internal class Board : IBoard
 
     public Board()
     {
-        //TD: patternline en wall initialiseren
-        // floorlune init
+        //strafpunten rij
         FloorLine = new TileSpot[7];
         for (int i = 0; i < 7; i++)
         {
             FloorLine[i] = new TileSpot();
         }
 
+        // patternline, lengtes van 1 tot 5
         PatternLines = new IPatternLine[5];
         for (int i = 0; i < 5; i++)
         {
             PatternLines[i] = new PatternLine(i + 1);
         }
 
+        // wall instellen en roteren voor juiste volgorde
         Wall = new TileSpot[5, 5];
         TileType[] baseTypes = new[]
         {
@@ -48,7 +49,6 @@ internal class Board : IBoard
                 Wall[row, col] = new TileSpot(baseTypes[index]);
             }
         }
-
 
         // score 0 (staat in de test)
         Score = 0;
