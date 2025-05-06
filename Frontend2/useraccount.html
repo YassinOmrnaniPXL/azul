@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mijn Account | Azul</title>
+    <!-- Add TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Extended Azul color palette
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                azulBlue: '#2a5b9c', 
+                azulCream: '#fdf6e3', 
+                azulAccent: '#e5a04f',
+                azulTile1: '#d95454', // red tile
+                azulTile2: '#5254d9', // deep blue tile
+                azulTile3: '#54d978', // green tile
+                azulTile4: '#c154d9', // purple tile
+                azulTile5: '#d9c154', // yellow tile
+              },
+              fontFamily: {
+                'display': ['Playfair Display', 'serif'],
+                'sans': ['Raleway', 'sans-serif'],
+              },
+            }
+          }
+        }
+      </script>
+    <style>
+        /* Import Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@300;400;600&display=swap');
+        
+        /* Solid background instead of mosaic pattern */
+        body {
+            background-color: #f8f5ee;
+        }
+        
+        /* Animation for content appearance */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+        
+        /* Form container styling */
+        .blurred-content {
+            background-color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Input focus effect */
+        .focus-ring {
+            transition: all 0.3s ease;
+        }
+        
+        .focus-ring:focus {
+            box-shadow: 0 0 0 3px rgba(42, 91, 156, 0.3);
+        }
+        
+        /* Button hover effect */
+        .btn-hover {
+            transition: all 0.3s ease;
+            background-size: 200% auto;
+            background-image: linear-gradient(to right, #2a5b9c 0%, #3a6bac 50%, #2a5b9c 100%);
+        }
+        
+        .btn-hover:hover {
+            background-position: right center;
+            transform: translateY(-2px);
+        }
+        
+        /* Profile image styles */
+        .profile-image {
+            position: relative;
+            overflow: hidden;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .profile-image:hover .profile-overlay {
+            opacity: 1;
+        }
+        
+        .profile-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(42, 91, 156, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        /* Tab styles */
+        .tab {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .tab.active {
+            border-color: #2a5b9c;
+            background-color: rgba(42, 91, 156, 0.1);
+        }
+        
+        /* Decorative Tiles */
+        .decorative-tile {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+            transform: rotate(var(--rotation));
+            animation: float 5s ease-in-out infinite;
+            animation-delay: var(--delay);
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(var(--rotation)); }
+          50% { transform: translateY(-10px) rotate(var(--rotation)); }
+        }
+    </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden">
+    <!-- Decorative Floating Tiles -->
+    <div class="decorative-tile bg-azulTile1" style="top: 15%; left: 10%; --rotation: 15deg; --delay: 0s;"></div>
+    <div class="decorative-tile bg-azulTile2" style="top: 70%; left: 5%; --rotation: -10deg; --delay: 0.5s;"></div>
+    <div class="decorative-tile bg-azulTile3" style="top: 20%; right: 10%; --rotation: 5deg; --delay: 1s;"></div>
+    <div class="decorative-tile bg-azulTile4" style="top: 80%; right: 15%; --rotation: -5deg; --delay: 1.5s;"></div>
+    <div class="decorative-tile bg-azulTile5" style="top: 50%; left: 90%; --rotation: 12deg; --delay: 2s;"></div>
+    
+    <div class="flex items-center justify-center min-h-screen py-12 px-4">
+        <div class="blurred-content p-8 md:p-12 rounded-xl shadow-xl max-w-4xl w-full border-4 border-azulBlue relative z-10 mx-auto">
+            <!-- Page Header -->
+            <div class="flex flex-col md:flex-row items-center justify-between mb-8 pb-6 border-b border-gray-200">
+                <div class="text-center md:text-left mb-4 md:mb-0">
+                    <h1 class="fade-in text-3xl md:text-4xl font-bold text-azulBlue font-display tracking-wide">
+                        Mijn Account
+                    </h1>
+                    <p class="fade-in delay-100 text-lg text-azulAccent font-light italic font-display">
+                        Welkom, <span id="usernameDisplay">SpelerNaam</span>!
+                    </p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="lobby.html" 
+                       class="fade-in delay-200 py-2 px-4 rounded-lg border-2 border-azulBlue text-azulBlue hover:bg-azulBlue hover:text-white transition duration-300">
+                        Naar Lobby
+                    </a>
+                    <a href="index.html" 
+                       class="fade-in delay-300 py-2 px-4 rounded-lg border-2 border-azulTile1 text-azulTile1 hover:bg-azulTile1 hover:text-white transition duration-300">
+                        Uitloggen
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Content with Tabs -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Sidebar with Profile Image -->
+                <div class="md:col-span-1">
+                    <div class="fade-in delay-100 flex flex-col items-center">
+                        <!-- Profile Image with Change Option -->
+                        <div class="profile-image w-40 h-40 mb-4">
+                            <img src="images/Default_pfp.jpg" alt="Profielfoto" class="w-full h-full object-cover" id="profileImage">
+                            <div class="profile-overlay" id="changeProfilePic">
+                                <span class="text-white text-sm font-medium">Foto wijzigen</span>
+                            </div>
+                        </div>
+                        <input type="file" id="profilePicInput" class="hidden" accept="image/*">
+                        
+                        <!-- Profile Stats -->
+                        <div class="w-full mt-6 space-y-4">
+                            <div class="p-4 bg-azulCream rounded-lg border border-azulAccent">
+                                <h3 class="font-display font-semibold text-azulBlue mb-2">Statistieken</h3>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex justify-between">
+                                        <span>Gespeelde partijen:</span>
+                                        <span class="font-semibold">15</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Gewonnen:</span>
+                                        <span class="font-semibold">7</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Win percentage:</span>
+                                        <span class="font-semibold">47%</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Hoogste score:</span>
+                                        <span class="font-semibold">92</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tabs Section -->
+                <div class="md:col-span-2">
+                    <!-- Tab Navigation -->
+                    <div class="fade-in delay-200 flex border-b border-gray-200 mb-6">
+                        <div class="tab active py-2 px-4 border-b-2 border-azulBlue" data-tab="profile">
+                            Profiel
+                        </div>
+                        <div class="tab py-2 px-4 border-b-2 border-transparent" data-tab="password">
+                            Wachtwoord
+                        </div>
+                        <div class="tab py-2 px-4 border-b-2 border-transparent" data-tab="settings">
+                            Instellingen
+                        </div>
+                    </div>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Profile Tab -->
+                        <div id="profile-tab" class="fade-in delay-300">
+                            <form id="profileForm" class="space-y-5">
+                                <div>
+                                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Gebruikersnaam</label>
+                                    <input type="text" id="username" name="username" value="SpelerNaam"
+                                           class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-azulBlue sm:text-sm">
+                                </div>
+                                
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">E-mailadres</label>
+                                    <input type="email" id="email" name="email" value="speler@voorbeeld.nl"
+                                           class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-azulBlue sm:text-sm">
+                                </div>
+                                
+                                <div>
+                                    <label for="displayName" class="block text-sm font-medium text-gray-700 mb-1">Weergavenaam</label>
+                                    <input type="text" id="displayName" name="displayName" value="Azul Meester"
+                                           class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-azulBlue sm:text-sm">
+                                </div>
+                                
+                                <div id="profileMessage" class="hidden"></div>
+                                
+                                <button type="submit"
+                                        class="btn-hover w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-azulBlue focus:outline-none">
+                                    Profiel bijwerken
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- Password Tab -->
+                        <div id="password-tab" class="fade-in delay-300 hidden">
+                            <form id="passwordForm" class="space-y-5">
+                                <div>
+                                    <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-1">Huidig wachtwoord</label>
+                                    <input type="password" id="currentPassword" name="currentPassword" required
+                                           class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-azulBlue sm:text-sm">
+                                </div>
+                                
+                                <div>
+                                    <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">Nieuw wachtwoord</label>
+                                    <input type="password" id="newPassword" name="newPassword" required
+                                           class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-azulBlue sm:text-sm">
+                                </div>
+                                
+                                <div>
+                                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Bevestig nieuw wachtwoord</label>
+                                    <input type="password" id="confirmPassword" name="confirmPassword" required
+                                           class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-azulBlue sm:text-sm">
+                                </div>
+                                
+                                <div id="passwordMessage" class="hidden"></div>
+                                
+                                <button type="submit"
+                                        class="btn-hover w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-azulBlue focus:outline-none">
+                                    Wachtwoord wijzigen
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- Settings Tab -->
+                        <div id="settings-tab" class="fade-in delay-300 hidden">
+                            <form id="settingsForm" class="space-y-5">
+                                <div>
+                                    <label class="flex items-center space-x-3">
+                                        <input type="checkbox" id="emailNotifications" name="emailNotifications" checked
+                                               class="form-checkbox h-5 w-5 text-azulBlue">
+                                        <span class="text-sm font-medium text-gray-700">Email notificaties ontvangen</span>
+                                    </label>
+                                </div>
+                                
+                                <div>
+                                    <label class="flex items-center space-x-3">
+                                        <input type="checkbox" id="soundEffects" name="soundEffects" checked
+                                               class="form-checkbox h-5 w-5 text-azulBlue">
+                                        <span class="text-sm font-medium text-gray-700">Geluidseffecten aan</span>
+                                    </label>
+                                </div>
+                                
+                                <div>
+                                    <label class="flex items-center space-x-3">
+                                        <input type="checkbox" id="darkMode" name="darkMode"
+                                               class="form-checkbox h-5 w-5 text-azulBlue">
+                                        <span class="text-sm font-medium text-gray-700">Donkere modus (binnenkort beschikbaar)</span>
+                                    </label>
+                                </div>
+                                
+                                <div>
+                                    <label class="flex items-center space-x-3">
+                                        <input type="checkbox" id="publicProfile" name="publicProfile" checked
+                                               class="form-checkbox h-5 w-5 text-azulBlue">
+                                        <span class="text-sm font-medium text-gray-700">Publiek profiel</span>
+                                    </label>
+                                </div>
+                                
+                                <div id="settingsMessage" class="hidden"></div>
+                                
+                                <button type="submit"
+                                        class="btn-hover w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-azulBlue focus:outline-none">
+                                    Instellingen opslaan
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Decorative footer pattern -->
+            <div class="absolute bottom-0 left-0 right-0 h-4 bg-azulBlue rounded-b-lg opacity-60"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/useraccount.js"></script>
+</body>
+</html> 

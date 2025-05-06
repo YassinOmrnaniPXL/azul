@@ -1,1 +1,311 @@
 <!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azul - Spelbord</title>
+    <!-- Add TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Expanded color palette inspired by Azul tiles
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                azulBlue: '#2a5b9c', 
+                azulCream: '#fdf6e3',
+                azulAccent: '#e5a04f',
+                azulTile1: '#d95454', // red tile (PlainRed)
+                azulTile2: '#5254d9', // deep blue tile (PlainBlue)
+                azulTile3: '#54d978', // green tile (BlackBlue)
+                azulTile4: '#c154d9', // purple tile (WhiteTurquoise)
+                azulTile5: '#d9c154', // yellow tile (YellowRed)
+                azulStartTile: '#000000', // black tile (StartingTile)
+              },
+              fontFamily: {
+                'display': ['Playfair Display', 'serif'],
+                'sans': ['Raleway', 'sans-serif'],
+              },
+              animation: {
+                'float': 'float 6s ease-in-out infinite',
+                'scale': 'scale 5s ease-in-out infinite',
+              },
+              keyframes: {
+                float: {
+                  '0%, 100%': { transform: 'translateY(0)' },
+                  '50%': { transform: 'translateY(-10px)' },
+                },
+                scale: {
+                  '0%, 100%': { transform: 'scale(1)' },
+                  '50%': { transform: 'scale(1.05)' },
+                },
+              },
+            }
+          }
+        }
+      </script>
+    <style>
+        /* Import Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@300;400;600&display=swap');
+        
+        /* Solid background instead of mosaic pattern */
+        body {
+            background-color: #f8f5ee;
+        }
+
+        /* Content styling without backdrop blur */
+        .blurred-content {
+            background-color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Decorative Tiles */
+        .decorative-tile {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+            transform: rotate(var(--rotation));
+            animation: float 5s ease-in-out infinite;
+            animation-delay: var(--delay);
+        }
+        
+        /* Animation for content appearance */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+
+        /* Tile styles */
+        .game-tile {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            display: inline-block;
+            margin: 2px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Factory display and board styles */
+        .factory-display {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background-color: #f5f5f5;
+            border: 3px solid #999;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            margin: 12px;
+            position: relative;
+            padding: 5px;
+            box-shadow: 0px 3px 8px rgba(0,0,0,0.15);
+        }
+        
+        .factory-tile {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            margin: 2px;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            border: 1px solid rgba(0, 0, 0, 0.3);
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .table-center {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            border: 2px solid #777;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            margin: 10px auto;
+            padding: 8px;
+        }
+
+        /* Tile images */
+        .img-azulStartTile {
+            background-image: url('images/black.png');
+        }
+        .img-azulTile1 {
+            background-image: url('images/red.png');
+        }
+        .img-azulTile2 {
+            background-image: url('images/blue.png');
+        }
+        .img-azulTile3 {
+            background-image: url('images/cyan.png');
+        }
+        .img-azulTile4 {
+            background-image: url('images/purple.png');
+        }
+        .img-azulTile5 {
+            background-image: url('images/yellow.png');
+        }
+        
+        /* Tile colors as fallback */
+        .bg-azulStartTile {
+            background-color: #000000 !important; /* Black */
+        }
+        .bg-azulTile1 {
+            background-color: #d95454 !important; /* Red */
+        }
+        .bg-azulTile2 {
+            background-color: #5254d9 !important; /* Blue */
+        }
+        .bg-azulTile3 {
+            background-color: #54d978 !important; /* Green */
+        }
+        .bg-azulTile4 {
+            background-color: #c154d9 !important; /* Purple */
+        }
+        .bg-azulTile5 {
+            background-color: #d9c154 !important; /* Yellow */
+        }
+        
+        /* Player board styles */
+        .pattern-line {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            height: 40px;
+            background-color: rgba(0,0,0,0.05);
+            margin: 4px 0;
+            border-radius: 4px;
+        }
+        
+        .pattern-tile-spot {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            background-color: rgba(0,0,0,0.1);
+            margin: 0 3px;
+            border: 1px dashed #999;
+        }
+        
+        .wall-tile-spot {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            background-color: rgba(0,0,0,0.05);
+            margin: 3px;
+            border: 1px dashed #999;
+        }
+        
+        .floor-line {
+            display: flex;
+            margin-top: 10px;
+            padding: 5px;
+            background-color: rgba(0,0,0,0.05);
+            border-radius: 4px;
+        }
+        
+        .floor-tile-spot {
+            width: 25px;
+            height: 25px;
+            border-radius: 3px;
+            background-color: rgba(0,0,0,0.1);
+            margin: 0 3px;
+            border: 1px dashed #999;
+        }
+        
+        .player-info {
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #2a5b9c;
+        }
+        
+        .current-player {
+            border-left: 4px solid #e5a04f;
+            background-color: rgba(229, 160, 79, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden">
+    <!-- Decorative Floating Tiles -->
+    <div class="decorative-tile bg-azulTile1" style="top: 15%; left: 10%; --rotation: 15deg; --delay: 0s;"></div>
+    <div class="decorative-tile bg-azulTile2" style="top: 70%; left: 5%; --rotation: -10deg; --delay: 0.5s;"></div>
+    <div class="decorative-tile bg-azulTile3" style="top: 20%; right: 10%; --rotation: 5deg; --delay: 1s;"></div>
+    <div class="decorative-tile bg-azulTile4" style="top: 80%; right: 15%; --rotation: -5deg; --delay: 1.5s;"></div>
+    <div class="decorative-tile bg-azulTile5" style="top: 50%; left: 90%; --rotation: 12deg; --delay: 2s;"></div>
+    
+    <!-- Main Game Container -->
+    <div class="container mx-auto py-8 px-4">
+        <div class="blurred-content p-4 md:p-8 rounded-xl shadow-xl border-4 border-azulBlue relative z-10 mx-auto">
+            <!-- Game Header -->
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-azulBlue font-display">Azul Spel</h1>
+                <div class="flex space-x-4">
+                    <span id="gameRound" class="bg-azulAccent px-4 py-2 rounded-md text-white font-medium">Ronde 1</span>
+                    <a href="lobby.html" class="bg-azulBlue px-4 py-2 rounded-md text-white font-medium hover:bg-opacity-80 transition">Verlaten</a>
+                </div>
+            </div>
+            
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-20">
+                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-azulBlue mx-auto mb-4"></div>
+                <p class="text-xl text-azulBlue">Spelbord wordt geladen...</p>
+            </div>
+            
+            <!-- Game Board (Hidden until loaded) -->
+            <div id="gameBoard" class="hidden">
+                <!-- Factory Display Section -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold mb-4 text-azulBlue font-display">Fabrieksaanbod</h2>
+                    <div class="bg-azulCream p-4 rounded-lg">
+                        <!-- Table Center -->
+                        <div class="text-center mb-4">
+                            <h3 class="text-lg font-medium mb-2">Tafelcentrum</h3>
+                            <div id="tableCenter" class="table-center">
+                                <!-- Table center tiles will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Factory Displays -->
+                        <h3 class="text-lg font-medium mb-2">Fabrieksschijven</h3>
+                        <div id="factoryDisplays" class="flex flex-wrap justify-center">
+                            <!-- Factory displays will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Players Section -->
+                <div id="playersSection">
+                    <h2 class="text-xl font-semibold mb-4 text-azulBlue font-display">Spelers</h2>
+                    <!-- Player boards will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Error Message -->
+            <div id="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded hidden mt-4"></div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="js/game.js"></script>
+</body>
+</html>
