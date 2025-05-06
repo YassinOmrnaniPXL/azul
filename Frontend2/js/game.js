@@ -216,12 +216,14 @@ document.addEventListener("DOMContentLoaded", () => {
             displayElement.className = 'factory-display';
             displayElement.dataset.displayId = display.id;
 
-            // Add tiles to the display
-            display.tiles.forEach(tileType => {
-                console.log(`Creating factory tile of type: ${tileType} for display ${index}`);
-                const tile = createTileElement(tileType, 'factory-tile');
-                displayElement.appendChild(tile);
-            });
+            // Add tiles to the display in a grid layout
+            if (display.tiles && display.tiles.length > 0) {
+                display.tiles.forEach(tileType => {
+                    console.log(`Creating factory tile of type: ${tileType} for display ${index}`);
+                    const tile = createTileElement(tileType, 'factory-tile');
+                    displayElement.appendChild(tile);
+                });
+            }
 
             factoryDisplays.appendChild(displayElement);
         });
@@ -236,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
         gameData.players.forEach(player => {
             // Create player container
             const playerElement = document.createElement('div');
-            playerElement.className = `player-container mb-8`;
+            playerElement.className = `player-container mb-6 pb-4 border-b border-gray-200`;
             
             // Create player info header
             const playerInfo = document.createElement('div');
@@ -254,14 +256,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 ${player.hasStartingTile ? '<div class="mt-1 text-xs">Heeft de startingstegel</div>' : ''}
             `;
             
-            // Create board element
-            const boardElement = document.createElement('div');
-            boardElement.className = 'player-board mt-2 grid grid-cols-1 md:grid-cols-2 gap-4';
+            // Create compact board layout
+            const boardWrapper = document.createElement('div');
+            boardWrapper.className = 'mt-3 flex flex-wrap gap-4';
             
-            // Create pattern lines section
+            // Create pattern lines & floor line section
+            const patternContainer = document.createElement('div');
+            patternContainer.className = 'flex-1 min-w-[200px]';
+            
+            // Add title for pattern lines
+            const patternTitle = document.createElement('h4');
+            patternTitle.className = 'text-sm font-medium mb-2';
+            patternTitle.textContent = 'Patroonlijnen';
+            patternContainer.appendChild(patternTitle);
+            
+            // Create pattern lines
             const patternLinesSection = document.createElement('div');
-            patternLinesSection.className = 'pattern-lines-section p-2';
-            patternLinesSection.innerHTML = '<h4 class="text-sm font-medium mb-2">Patroonlijnen</h4>';
+            patternLinesSection.className = 'pattern-lines-section';
             
             // Create 5 pattern lines (rows 1-5)
             for (let i = 0; i < 5; i++) {
@@ -290,38 +301,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 patternLinesSection.appendChild(patternLine);
             }
             
-            // Create wall section
-            const wallSection = document.createElement('div');
-            wallSection.className = 'wall-section p-2';
-            wallSection.innerHTML = '<h4 class="text-sm font-medium mb-2">Muur</h4>';
+            patternContainer.appendChild(patternLinesSection);
             
-            // Create the wall grid (5x5)
-            const wallGrid = document.createElement('div');
-            wallGrid.className = 'wall-grid grid grid-cols-5 gap-1';
-            
-            // Add wall spots (5x5 grid)
-            for (let row = 0; row < 5; row++) {
-                for (let col = 0; col < 5; col++) {
-                    const spot = document.createElement('div');
-                    spot.className = 'wall-tile-spot';
-                    
-                    // Fill in tile if it exists in the wall
-                    if (player.board.wall && player.board.wall[row][col].hasTile) {
-                        // Get the tile type from the wall pattern
-                        const tileType = getTileTypeForWallPosition(row, col);
-                        spot.classList.add(getTileColorClass(tileType));
-                        spot.classList.add(getImageClass(tileType));
-                    }
-                    
-                    wallGrid.appendChild(spot);
-                }
-            }
-            
-            wallSection.appendChild(wallGrid);
-            
-            // Create floor line section
+            // Add floor line section
             const floorLineSection = document.createElement('div');
-            floorLineSection.className = 'col-span-1 md:col-span-2 mt-2';
+            floorLineSection.className = 'mt-2';
             floorLineSection.innerHTML = '<h4 class="text-sm font-medium mb-2">Vloerlijn</h4>';
             
             const floorLine = document.createElement('div');
@@ -347,20 +331,72 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             
             floorLineSection.appendChild(floorLine);
+            patternContainer.appendChild(floorLineSection);
             
-            // Assemble the board
-            boardElement.appendChild(patternLinesSection);
-            boardElement.appendChild(wallSection);
-            boardElement.appendChild(floorLineSection);
+            // Create wall section
+            const wallContainer = document.createElement('div');
+            wallContainer.className = 'flex-1 min-w-[200px]';
             
-            // Assemble the player container
-            playerElement.appendChild(playerInfo);
-            playerElement.appendChild(boardElement);
+            // Wall title with info tooltip
+            wallContainer.innerHTML = `
+                <h4 class="text-sm font-medium mb-2">
+                    Muur
+                    <div class="info-tooltip inline-block">
+                        <i>ⓘ</i>
+                        <span class="tooltip-text">In de muur worden tegels geplaatst volgens een vast patroon. Elke rij mag maar één tegel van elke kleur bevatten.</span>
+                    </div>
+                </h4>
+                <p class="text-xs mb-2 text-gray-600">Tegels worden geplaatst volgens het patroon.</p>
+            `;
+            
+            // Create the wall grid
+            const wallGrid = document.createElement('div');
+            wallGrid.className = 'wall-grid grid grid-cols-5 gap-1 p-2 bg-white rounded-lg border border-gray-200';
+            
+            // Add wall spots (5x5 grid)
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    const spot = document.createElement('div');
+                    const tileType = getTileTypeForWallPosition(row, col);
+                    
+                    // Check if tile is placed
+                    const hasTile = player.board.wall && player.board.wall[row][col].hasTile;
+                    
+                    // Create the base spot
+                    spot.className = 'wall-tile-spot';
+                    
+                    // Create a div for the tile
+                    const tileDiv = document.createElement('div');
+                    tileDiv.className = 'w-full h-full ' + getImageClass(tileType);
+                    tileDiv.style.backgroundSize = 'cover';
+                    spot.appendChild(tileDiv);
+                    
+                    // Add overlay for unfilled spots
+                    if (!hasTile) {
+                        // Create a semi-transparent overlay with a subtle border
+                        const overlay = document.createElement('div');
+                        overlay.className = 'wall-pattern-overlay';
+                        
+                        // Add a subtle outline to show the pattern more clearly
+                        spot.style.boxShadow = 'inset 0 0 0 1px rgba(0,0,0,0.1)';
+                        
+                        spot.appendChild(overlay);
+                    } else {
+                        // Add a subtle border for filled tiles
+                        spot.style.border = '1px solid #666';
+                        spot.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                    }
+                    
+                    wallGrid.appendChild(spot);
+                }
+            }
+            
+            wallContainer.appendChild(wallGrid);
             
             // Add tiles to place section if player has tiles to place
             if (player.tilesToPlace && player.tilesToPlace.length > 0) {
                 const tilesToPlaceSection = document.createElement('div');
-                tilesToPlaceSection.className = 'tiles-to-place mt-3 p-2 bg-azulCream rounded';
+                tilesToPlaceSection.className = 'tiles-to-place mt-3 p-2 bg-azulCream rounded w-full';
                 tilesToPlaceSection.innerHTML = '<h4 class="text-sm font-medium mb-2">Tegels om te plaatsen</h4><div class="flex flex-wrap"></div>';
                 
                 const tilesContainer = tilesToPlaceSection.querySelector('div');
@@ -370,8 +406,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     tilesContainer.appendChild(tile);
                 });
                 
-                playerElement.appendChild(tilesToPlaceSection);
+                boardWrapper.appendChild(tilesToPlaceSection);
             }
+            
+            // Add both sections to the board wrapper
+            boardWrapper.appendChild(patternContainer);
+            boardWrapper.appendChild(wallContainer);
+            
+            // Assemble the player container
+            playerElement.appendChild(playerInfo);
+            playerElement.appendChild(boardWrapper);
             
             // Add to players section
             playersSection.appendChild(playerElement);
