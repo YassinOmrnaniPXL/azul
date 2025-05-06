@@ -41,30 +41,39 @@ internal class TileFactory : ITileFactory
     {
         // wtf
 
-        // gaat over elke rij van display die gevuld moet worden
         for (int i = 0; i < _numberOfDisplays; i++)
         {
             var display = _displays[i];
             IReadOnlyList<TileType> tiles;
 
+            // 4 tiles proberen te pakken
             if (!_tileBag.TryTakeTiles(4, out tiles))
             {
-                if (UsedTiles.Any())
+                // als 4 niet lukt, wat wel
+                int tilesTaken = tiles?.Count ?? 0;
+                int tilesNeeded = 4 - tilesTaken;
+
+                // als we er nodig hebben en er zijn nog
+                if (tilesNeeded > 0 && UsedTiles.Any())
                 {
+                    // gebruikte in bag zetten
                     _tileBag.AddTiles(UsedTiles);
                     UsedTiles.Clear();
-                }
 
-                // als het niet lukt, bag vullen met usedtiles
-                if (!_tileBag.TryTakeTiles(4, out tiles))
-                {
-                    tiles = new List<TileType>();
+                    // remaining tiles pakken
+                    IReadOnlyList<TileType> additionalTiles;
+                    if (_tileBag.TryTakeTiles(tilesNeeded, out additionalTiles))
+                    {
+                        // samenzetten met vorige
+                        var combinedTiles = new List<TileType>();
+                        if (tiles != null) combinedTiles.AddRange(tiles);
+                        combinedTiles.AddRange(additionalTiles);
+                        tiles = combinedTiles;
+                    }
                 }
             }
-            // toevoegen aan display
-            display.AddTiles(tiles);
-            ((List<IFactoryDisplay>)Displays).Add(display);
-            // throw new NotImplementedException();
+
+            display.AddTiles(tiles ?? new List<TileType>());
         }
     }
 
