@@ -28,19 +28,21 @@ internal class FactoryDisplay : IFactoryDisplay
 
     public IReadOnlyList<TileType> TakeTiles(TileType tileType)
     {
+        // Get tiles of the selected type
         var taken = _tiles.Where(t => t == tileType).ToList();
+        
+        // Get remaining tiles
         var remaining = _tiles.Where(t => t != tileType).ToList();
-
-        _tiles.Clear(); 
-        _tiles.AddRange(remaining); // niet genomen terug zetten
-
-        // terug naar table center
+        
+        // Clear all tiles from the display
+        _tiles.Clear();
+        
+        // Move remaining tiles to the table center
         foreach (var tile in remaining)
         {
             _tableCenter.AddTiles(new List<TileType> { tile });
         }
-
+        
         return taken;
-        // throw new NotImplementedException();
     }
 }

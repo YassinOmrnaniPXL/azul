@@ -24,7 +24,8 @@ internal class GameService : IGameService
 
     public void TakeTilesFromFactory(Guid gameId, Guid playerId, Guid displayId, TileType tileType)
     {
-        throw new NotImplementedException();
+        IGame game = _gameRepository.GetById(gameId);
+        game.TakeTilesFromFactory(playerId, displayId, tileType);
     }
 
     public void PlaceTilesOnPatternLine(Guid gameId, Guid playerId, int patternLineIndex)

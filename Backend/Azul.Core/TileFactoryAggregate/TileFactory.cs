@@ -79,6 +79,35 @@ internal class TileFactory : ITileFactory
 
     public IReadOnlyList<TileType> TakeTiles(Guid displayId, TileType tileType)
     {
-        throw new NotImplementedException();
+        // Check if it's the table center
+        if (displayId == TableCenter.Id)
+        {
+            // Check if the tile type exists in the table center
+            if (!TableCenter.Tiles.Contains(tileType))
+            {
+                throw new InvalidOperationException($"The table center does not contain any tiles of type {tileType}.");
+            }
+            
+            // Take tiles from the table center
+            return TableCenter.TakeTiles(tileType);
+        }
+        
+        // Find the factory display
+        IFactoryDisplay? display = Displays.FirstOrDefault(d => d.Id == displayId);
+        
+        // Check if the display exists
+        if (display == null)
+        {
+            throw new InvalidOperationException($"Factory display with ID {displayId} does not exist.");
+        }
+        
+        // Check if the tile type exists in the display
+        if (!display.Tiles.Contains(tileType))
+        {
+            throw new InvalidOperationException($"The factory display does not contain any tiles of type {tileType}.");
+        }
+        
+        // Take tiles from the display
+        return display.TakeTiles(tileType);
     }
 }

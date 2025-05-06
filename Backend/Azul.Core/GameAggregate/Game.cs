@@ -62,6 +62,36 @@ internal class Game : IGame
 
     public void TakeTilesFromFactory(Guid playerId, Guid displayId, TileType tileType)
     {
-        throw new NotImplementedException();
+        // Check if it's the player's turn
+        if (playerId != PlayerToPlayId)
+        {
+            throw new InvalidOperationException("It is not your turn to play.");
+        }
+
+        // Find the player
+        IPlayer player = Players.FirstOrDefault(p => p.Id == playerId) ?? 
+            throw new InvalidOperationException("Player not found.");
+
+        // Check if the player already has tiles to place
+        if (player.TilesToPlace.Count > 0)
+        {
+            throw new InvalidOperationException("You already have tiles that need to be placed.");
+        }
+
+        // Take tiles from the factory
+        IReadOnlyList<TileType> takenTiles = TileFactory.TakeTiles(displayId, tileType);
+
+        // Add tiles to the player's tiles to place
+        foreach (TileType tile in takenTiles)
+        {
+            if (tile == TileType.StartingTile)
+            {
+                player.HasStartingTile = true;
+            }
+            else
+            {
+                player.TilesToPlace.Add(tile);
+            }
+        }
     }
 }
