@@ -9,12 +9,12 @@ internal class TileFactory : ITileFactory
     internal TileFactory(int numberOfDisplays, ITileBag bag)
     {
         _numberOfDisplays = numberOfDisplays;
-        _tileBag = bag ?? throw new ArgumentNullException(nameof(bag));
-        _displays = new List<IFactoryDisplay>(_numberOfDisplays); // NEW
+        _tileBag = bag ?? throw new ArgumentNullException(nameof(bag)); // lege bag gooit een error
+        _displays = new List<IFactoryDisplay>(_numberOfDisplays);
         TableCenter = new TableCenter();
         UsedTiles = new List<TileType>();
 
-        for (int i = 0; i < _numberOfDisplays; i++)
+        for (int i = 0; i < _numberOfDisplays; i++) // zet alle factory displays in de tablecenter
         {
             _displays.Add(new FactoryDisplay(TableCenter));
         }

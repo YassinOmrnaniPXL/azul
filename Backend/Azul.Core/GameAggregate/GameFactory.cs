@@ -37,14 +37,10 @@ internal class GameFactory : IGameFactory
         // tablecenter aanmaken
         ITableCenter tableCenter = new TableCenter();
 
-        // tilefactory vullen
-        int numberOfDisplays = table.Preferences.NumberOfFactoryDisplays;
-        var tileFactory = new TileFactory(numberOfDisplays, bag);
+        // filldisplay nog niet doen
+        var tileFactory = new TileFactory(table.Preferences.NumberOfFactoryDisplays, bag);
 
-        // display vullen met tiles
-        tileFactory.FillDisplays();
-
-        // game maken en teruggeven
+        // game maken zonder displays te vullen
         return new Game(gameId, tileFactory, players);
     }
 }
