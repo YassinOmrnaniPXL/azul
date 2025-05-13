@@ -30,11 +30,13 @@ internal class GameService : IGameService
 
     public void PlaceTilesOnPatternLine(Guid gameId, Guid playerId, int patternLineIndex)
     {
-        throw new NotImplementedException();
+        IGame game = _gameRepository.GetById(gameId);
+        game.PlaceTilesOnPatternLine(playerId, patternLineIndex);
     }
 
     public void PlaceTilesOnFloorLine(Guid gameId, Guid playerId)
     {
-        throw new NotImplementedException();
+        IGame game = _gameRepository.GetById(gameId);
+        game.PlaceTilesOnFloorLine(playerId);
     }
 }
