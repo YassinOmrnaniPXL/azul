@@ -187,18 +187,62 @@ document.addEventListener("DOMContentLoaded", () => {
      */
     function renderTableCenter() {
         if (!gameData || !gameData.tileFactory || !gameData.tileFactory.tableCenter) return;
-
+    
         const centerTiles = gameData.tileFactory.tableCenter.tiles;
         console.log('Rendering table center tiles:', centerTiles);
-        
-        // Render tiles in table center
-        centerTiles.forEach(tileType => {
-            console.log('Creating table center tile of type:', tileType);
+    
+        // Maak een Set van unieke tileTypes (want speler kiest alle van één type tegelijk)
+        const uniqueTypes = [...new Set(centerTiles)];
+    
+        uniqueTypes.forEach(tileType => {
             const tile = createTileElement(tileType, 'factory-tile');
-            console.log('Created tile with class:', tile.className);
+            tile.classList.add('cursor-pointer', 'hover:scale-105', 'transition-transform');
+            tile.addEventListener('click', () => {
+                handleTableCenterTileClick(tileType);
+            });
             tableCenter.appendChild(tile);
         });
     }
+
+    async function handleTableCenterTileClick(tileType) {
+        if (currentPlayerId !== gameData.playerToPlayId) {
+            showError('Het is niet jouw beurt ☆'); return;
+        }
+    
+        const currentPlayer = gameData.players.find(p => p.id === currentPlayerId);
+        if (currentPlayer.tilesToPlace && currentPlayer.tilesToPlace.length > 0) {
+            showError('Je moet eerst je huidige tegels plaatsen voor je nieuwe mag nemen.'); return;
+        }
+    
+        const token = sessionStorage.getItem('token');
+        if (!token || !gameId) return;
+    
+        try {
+            const response = await fetch(`${backendUrl}/api/Games/${gameId}/take-tiles`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    displayId: '00000000-0000-0000-0000-000000000000', // tafelcentrum-ID
+                    tileType: tileType
+                })
+            });
+    
+            if (response.ok) {
+                console.log(`Tegels van type ${tileType} succesvol opgepakt!`);
+                await loadGameData(); // vernieuw UI
+            } else {
+                const err = await response.json();
+                showError(err.message || 'Fout bij het selecteren van tegels.');
+            }
+        } catch (error) {
+            console.error('Verzoek mislukt:', error);
+            showError('Kan geen verbinding maken met de server');
+        }
+    }
+    
 
     /**
      * Render all factory displays with tiles
