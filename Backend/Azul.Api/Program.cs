@@ -110,8 +110,30 @@ namespace Azul.Api
             });
 
             IConfiguration configuration = builder.Configuration;
+            
+            // Handle environment variable substitution for production
+            var connectionString = configuration.GetConnectionString("AzulDbConnection");
+            if (connectionString?.Contains("${DATABASE_URL}") == true)
+            {
+                connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? connectionString;
+            }
+            
             var tokenSettings = new TokenSettings();
             configuration.Bind("Token", tokenSettings);
+            
+            // Handle JWT environment variables
+            if (tokenSettings.Key?.Contains("${JWT_SECRET_KEY}") == true)
+            {
+                tokenSettings.Key = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? tokenSettings.Key;
+            }
+            if (tokenSettings.Issuer?.Contains("${JWT_ISSUER}") == true)
+            {
+                tokenSettings.Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? tokenSettings.Issuer;
+            }
+            if (tokenSettings.Audience?.Contains("${JWT_AUDIENCE}") == true)
+            {
+                tokenSettings.Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? tokenSettings.Audience;
+            }
 
             // Log the loaded token expiration time
             Console.WriteLine($"Loaded TokenSettings - ExpirationTimeInMinutes: {tokenSettings.ExpirationTimeInMinutes}");
@@ -289,7 +311,7 @@ namespace Azul.Api
             builder.Services.AddAutoMapper(typeof(Program));
             builder.Services.AddSingleton<ITokenFactory>(new JwtTokenFactory(tokenSettings));
             builder.Services.AddCore();
-            builder.Services.AddInfrastructure(configuration.GetConnectionString("AzulDbConnection")!);
+            builder.Services.AddInfrastructure(connectionString!);
             
             // Register friend system services
             builder.Services.AddScoped<IFriendService, FriendService>();

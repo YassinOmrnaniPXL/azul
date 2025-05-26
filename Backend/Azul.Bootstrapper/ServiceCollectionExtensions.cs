@@ -28,13 +28,26 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
     {
+        // Determine database provider based on connection string
+        bool isPostgreSQL = connectionString.Contains("postgresql://") || connectionString.Contains("postgres://");
+        
         // Add Entity Framework DbContext
         services.AddDbContext<AzulDbContext>(options =>
-            options.UseSqlServer(connectionString));
+        {
+            if (isPostgreSQL)
+                options.UseNpgsql(connectionString);
+            else
+                options.UseSqlServer(connectionString);
+        });
 
         // Add Extended DbContext for friend system
         services.AddDbContext<AzulExtendedDbContext>(options =>
-            options.UseSqlServer(connectionString));
+        {
+            if (isPostgreSQL)
+                options.UseNpgsql(connectionString);
+            else
+                options.UseSqlServer(connectionString);
+        });
 
         // Register repositories as Singleton for in-memory storage
         services.AddSingleton<ITableRepository, InMemoryTableRepository>();
