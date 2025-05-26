@@ -51,7 +51,14 @@ namespace Azul.Api
             {
                 options.AddPolicy("AllowFrontendApp",
                     policyBuilder => policyBuilder
-                        .WithOrigins("http://127.0.0.1:5500", "http://localhost:5500", "http://127.0.0.1:8080", "http://localhost:8080")
+                        .WithOrigins(
+                            "http://127.0.0.1:5500", 
+                            "http://localhost:5500", 
+                            "http://127.0.0.1:8080", 
+                            "http://localhost:8080",
+                            "http://localhost:8081",
+                            "https://yassinomrnanipxl.github.io"  // GitHub Pages domain
+                        )
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials());
@@ -477,6 +484,13 @@ namespace Azul.Api
 
             // Map SignalR Hub
             app.MapHub<GameWebSocketHub>("/api/gamehub");
+
+            // Health check endpoint for Railway
+            app.MapGet("/health", () => Results.Ok(new { 
+                status = "healthy", 
+                timestamp = DateTime.UtcNow,
+                environment = app.Environment.EnvironmentName 
+            }));
 
             app.Run();
         }

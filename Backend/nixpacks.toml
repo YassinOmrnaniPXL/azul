@@ -1,0 +1,11 @@
+[phases.build]
+cmds = [
+    "dotnet restore",
+    "dotnet publish Azul.Api/Azul.Api.csproj -c Release -o out --no-restore"
+]
+
+[phases.start]
+cmd = "dotnet out/Azul.Api.dll"
+
+[variables]
+DOTNET_ROOT = "/nix/store/*-dotnet-sdk-*/share/dotnet" 
