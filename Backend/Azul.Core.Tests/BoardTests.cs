@@ -486,14 +486,34 @@ public class BoardTests
 
     private void ArrangePatterLines(string patternLinesAsText)
     {
-        string[] lines = patternLinesAsText.Split('\n');
-        for (int i = 0; i < lines.Length; i++)
+        Assert.That(_board, Is.Not.Null);
+        var lines = patternLinesAsText.Split('\n');
+        Assert.That(lines.Length, Is.EqualTo(5), "Provide 5 pattern lines in the input string");
+        for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
         {
-            string[] parts = lines[i].Split(',');
-            if (Enum.TryParse<TileType>(parts[0], out TileType tileType))
+            // Clear the line first to reset any previous state from other test steps
+            _board!.PatternLines[lineIndex].Clear(); 
+
+            var parts = lines[lineIndex].Trim().Split(','); // Trim to handle potential whitespace
+            Assert.That(parts.Length, Is.EqualTo(2), $"Each pattern line should have a type and a number of tiles (e.g. PlainRed,3). Faulty line: {lines[lineIndex]}");
+            
+            int numberOfTiles = int.Parse(parts[1]);
+            
+            if (parts[0].Equals("Empty", StringComparison.OrdinalIgnoreCase))
             {
-                int numberOfTiles = int.Parse(parts[1]);
-                _board!.PatternLines[i].TryAddTiles(tileType, numberOfTiles, out _);
+                // For "Empty" lines, use our special test extension to set tiles without a type
+                if (numberOfTiles > 0)
+                {
+                    _board!.PatternLines[lineIndex].SetTilesWithoutTypeForTesting(numberOfTiles);
+                }
+            }
+            else
+            {
+                TileType tileType = Enum.Parse<TileType>(parts[0]);
+                if (numberOfTiles > 0)
+                {
+                    _board!.PatternLines[lineIndex].TryAddTiles(tileType, numberOfTiles, out int _);
+                }
             }
         }
     }
@@ -567,6 +587,19 @@ public class BoardTests
                     Assert.That(_board!.Wall[i, j].HasTile, Is.False, $"Wall cell ({i},{j}) should not have a tile after wall tiling");
                 }
             }
+        }
+    }
+
+    private void DebugWallStructure()
+    {
+        Console.WriteLine("Wall structure (Type at each position):");
+        for (int row = 0; row < 5; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                Console.Write($"{_board!.Wall[row, col].Type} ");
+            }
+            Console.WriteLine();
         }
     }
 

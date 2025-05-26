@@ -80,7 +80,7 @@ public class TableTests
         Assert.That(_table.SeatedPlayers.Count, Is.EqualTo(1), "There should be 1 seated player");
         IPlayer seatedPlayer = _table.SeatedPlayers[0];
         Assert.That(seatedPlayer.Id, Is.EqualTo(user.Id), "The seated player has an incorrect id");
-        Assert.That(seatedPlayer.Name, Is.EqualTo(user.UserName), "The seated player has an incorrect name");
+        Assert.That(seatedPlayer.Name, Is.EqualTo(user.DisplayName ?? user.UserName), "The seated player has an incorrect name");
         Assert.That(seatedPlayer.LastVisitToPortugal, Is.EqualTo(user.LastVisitToPortugal),
             "The seated player has an incorrect last visit to Portugal date");
 
@@ -103,7 +103,7 @@ public class TableTests
         Assert.That(_table.SeatedPlayers.Count, Is.EqualTo(2), "There should be 2 seated players");
         IPlayer? secondPlayer = _table.SeatedPlayers.FirstOrDefault(p => p.Id == user2.Id);
         Assert.That(secondPlayer, Is.Not.Null, "The second player (with same id as the second user) should be seated");
-        Assert.That(secondPlayer!.Name, Is.EqualTo(user2.UserName), "The second seated player has an incorrect name");
+        Assert.That(secondPlayer!.Name, Is.EqualTo(user2.DisplayName ?? user2.UserName), "The second seated player has an incorrect name");
         Assert.That(secondPlayer.LastVisitToPortugal, Is.EqualTo(user2.LastVisitToPortugal),
             "The second player  has an incorrect last visit to Portugal date");
         Assert.That(_table.HasAvailableSeat, Is.False, "The table should be full");

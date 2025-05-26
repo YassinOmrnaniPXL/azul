@@ -28,7 +28,7 @@ public class PlayerMockBuilder : MockBuilder<IPlayer>
     public PlayerMockBuilder BasedOnUser(User user)
     {
         Mock.SetupGet(p => p.Id).Returns(user.Id);
-        Mock.SetupGet(p => p.Name).Returns(user.UserName ?? "Unknown");
+        Mock.SetupGet(p => p.Name).Returns(user.DisplayName ?? user.UserName ?? "Unknown");
         Mock.SetupGet(p => p.LastVisitToPortugal).Returns(user.LastVisitToPortugal);
         return this;
     }

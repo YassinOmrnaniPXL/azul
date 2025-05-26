@@ -36,5 +36,11 @@ namespace Azul.Core.TableAggregate.Contracts
         /// <param name="table">The table to update</param>
         /// <exception cref="DataNotFoundException">When no table is found</exception>
         void Update(ITable table);
+
+        /// <summary>
+        /// Gets all tables that are currently active and joinable.
+        /// </summary>
+        /// <returns>A list of joinable tables.</returns>
+        IEnumerable<ITable> GetAllJoinableTables();
     }
 }

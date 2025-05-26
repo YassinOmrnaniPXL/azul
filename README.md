@@ -97,6 +97,19 @@ project-2425-azul-azul04/
 - [x] Responsive UI design
 - [x] Session persistence
 
+## 🚀 Deployment
+
+### Quick Start
+1. **Frontend (GitHub Pages)**: Run `./deploy.ps1` (Windows) or `./deploy.sh` (Linux/Mac)
+2. **Backend**: Use Railway, Render, or Azure App Service (see `DEPLOYMENT.md`)
+
+### Free Deployment Options
+- **Frontend**: GitHub Pages (Free)
+- **Backend**: Render Free Tier or Azure App Service F1
+- **Database**: PostgreSQL on Render (90 days free)
+
+For detailed deployment instructions, see [`DEPLOYMENT.md`](DEPLOYMENT.md).
+
 ## 🐛 Debugging Tips
 - Check browser console for frontend errors
 - Monitor backend logs for API issues
@@ -104,4 +117,4 @@ project-2425-azul-azul04/
 - Ensure both backend and frontend servers are running
 
 ---
-*Last updated: May 2025 - Table persistence issue resolved* ✅
+*Last updated: May 2025 - Table persistence issue resolved & Deployment guide added* ✅

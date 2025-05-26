@@ -12,6 +12,10 @@ using Guts.Client.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using Azul.Api.WS;
+using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
+using System.IO;
 
 namespace Azul.Api.Tests
 {
@@ -21,6 +25,8 @@ namespace Azul.Api.Tests
     {
         private Mock<IGameService> _gameServiceMock = null!;
         private Mock<IMapper> _mapperMock = null!;
+        private Mock<IGameEventBus> _gameEventBusMock = null!;
+        private Mock<ILogger<GamesController>> _loggerMock = null!;
         private GamesController _controller = null!;
         private User _loggedInUser = null!;
 
@@ -28,10 +34,15 @@ namespace Azul.Api.Tests
         public void SetUp()
         {
             _gameServiceMock = new Mock<IGameService>();
-
-
             _mapperMock = new Mock<IMapper>();
-            _controller = new GamesController(_gameServiceMock.Object, _mapperMock.Object);
+            _gameEventBusMock = new Mock<IGameEventBus>();
+            _loggerMock = new Mock<ILogger<GamesController>>();
+            
+            _controller = new GamesController(
+                _gameServiceMock.Object, 
+                _mapperMock.Object, 
+                _gameEventBusMock.Object, 
+                _loggerMock.Object);
 
             _loggedInUser = new UserBuilder().Build();
             var userClaimsPrincipal = new ClaimsPrincipal(

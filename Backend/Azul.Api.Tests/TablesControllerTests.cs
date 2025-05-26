@@ -41,13 +41,13 @@ public class TablesControllerTests
         var loggerMock = new Mock<ILogger<UserManager<User>>>();
         _userManagerMock = new Mock<UserManager<User>>(
             userStoreMock.Object,
-            null,
+            null!,
             passwordHasherMock.Object,
-            null,
-            null,
+            null!,
+            null!,
             lookupNormalizerMock.Object,
             errorsMock.Object,
-            null,
+            null!,
             loggerMock.Object);
 
         _controller = new TablesController(_tableManagerMock.Object, _tableRepositoryMock.Object, _mapperMock.Object, _userManagerMock.Object);
@@ -92,7 +92,7 @@ public class TablesControllerTests
     public void JoinOrCreate_NoMatchingTableExists_ShouldUseTheTableManagerToCreateANewTableSeatedByTheLoggedInUser()
     {
         //Arrange
-        ITable createdTable = new TableMockBuilder().WithSeatedUsers([_loggedInUser]).Object;
+        ITable createdTable = new TableMockBuilder().WithSeatedUsers([_loggedInUser]).WithHostPlayerId(_loggedInUser.Id).Object;
         _tableManagerMock.Setup(manager => manager.JoinOrCreateTable(It.IsAny<User>(), It.IsAny<TablePreferences>()))
             .Returns(createdTable);
 
@@ -110,8 +110,8 @@ public class TablesControllerTests
 
         _tableManagerMock.Verify(manager => manager.JoinOrCreateTable(_loggedInUser, _tablePreferences), Times.Once,
             "The 'JoinOrCreateTable' method of the table manager is not called correctly");
-
-        _tableManagerMock.Verify(manager => manager.StartGameForTable(It.IsAny<Guid>()), Times.Never,
+        // Updated to expect userId parameter for StartGameForTable
+        _tableManagerMock.Verify(manager => manager.StartGameForTable(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never,
             "The 'StartGameForTable' method of the table manager should not be called. The table is not full yet.");
 
         _mapperMock.Verify(mapper => mapper.Map<TableModel>(createdTable), Times.Once,
@@ -125,7 +125,11 @@ public class TablesControllerTests
     {
         //Arrange
         User otherUser = new UserBuilder().Build();
-        ITable createdTable = new TableMockBuilder().WithSeatedUsers([otherUser, _loggedInUser]).Object;
+        // Ensure createdTable mock has HostPlayerId set (assuming _loggedInUser is the host after joining)
+        ITable createdTable = new TableMockBuilder()
+            .WithSeatedUsers([otherUser, _loggedInUser])
+            .WithHostPlayerId(_loggedInUser.Id) // Or otherUser.Id if otherUser creates the table first
+            .Object;
         _tableManagerMock.Setup(manager => manager.JoinOrCreateTable(It.IsAny<User>(), It.IsAny<TablePreferences>()))
             .Returns(createdTable);
 
@@ -144,8 +148,9 @@ public class TablesControllerTests
         _tableManagerMock.Verify(manager => manager.JoinOrCreateTable(_loggedInUser, _tablePreferences), Times.Once,
             "The 'JoinOrCreateTable' method of the table manager is not called correctly");
 
-        _tableManagerMock.Verify(manager => manager.StartGameForTable(createdTable.Id), Times.Once,
-            "The 'StartGameForTable' method of the table manager is not called correctly. The table is not full yet.");
+        // Game is no longer started automatically from JoinOrCreate
+        _tableManagerMock.Verify(manager => manager.StartGameForTable(createdTable.Id, It.IsAny<Guid>()), Times.Never,
+            "The 'StartGameForTable' method of the table manager should NOT be called automatically after joining/creating.");
 
         _mapperMock.Verify(mapper => mapper.Map<TableModel>(createdTable), Times.Once,
             "The table is not correctly mapped to a table model");

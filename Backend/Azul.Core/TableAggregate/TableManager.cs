@@ -66,7 +66,7 @@ internal class TableManager : ITableManager
     }
 
 
-    public IGame StartGameForTable(Guid tableId)
+    public IGame StartGameForTable(Guid tableId, Guid userId)
     {
         var table = _tableRepository.Get(tableId);
 
@@ -75,9 +75,19 @@ internal class TableManager : ITableManager
             throw new ArgumentException($"Table with id {tableId} not found.");
         }
 
+        if (table.HostPlayerId != userId)
+        {
+            throw new InvalidOperationException("Only the host can start the game.");
+        }
+
         if (table.SeatedPlayers.Count < table.Preferences.NumberOfPlayers)
         {
-            throw new InvalidOperationException("Cannot start game: not enough players at the table.");
+            throw new InvalidOperationException("Cannot start game: table is not full.");
+        }
+
+        if (table.GameId != Guid.Empty)
+        {
+            throw new InvalidOperationException("Game has already been started for this table.");
         }
 
         // Maak nieuw Game object aan vanuit de table (gebruik jouw CreateNewForTable!)

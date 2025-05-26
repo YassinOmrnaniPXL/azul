@@ -14,6 +14,7 @@ internal class Table : ITable
     public Guid Id { get; private set; }
     Guid ITable.Id => Id;
     public Guid GameId { get; set; } = Guid.Empty;
+    public Guid HostPlayerId { get; private set; }
 
 
 
@@ -50,7 +51,7 @@ internal class Table : ITable
             throw new InvalidOperationException("Table is full. No available seats.");
         }
 
-        var player = new HumanPlayer(user.Id, user.UserName, user.LastVisitToPortugal);
+        var player = new HumanPlayer(user.Id, user.DisplayName ?? user.UserName, user.LastVisitToPortugal);
         _seatedPlayers.Add(player);
     }
 

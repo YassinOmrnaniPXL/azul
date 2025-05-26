@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azul Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Extended Azul color palette
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                azulBlue: '#2a5b9c', 
+                azulCream: '#fdf6e3',
+                azulAccent: '#e5a04f',
+                azulTile1: '#d95454', // red tile - matches .tile-red
+                azulTile2: '#5254d9', // deep blue tile - matches .tile-blue (adjust if needed)
+                azulTile3: '#54d978', // green tile - new, or map to existing like .tile-teal
+                azulTile4: '#c154d9', // purple tile - new
+                azulTile5: '#d9c154', // yellow tile - matches .tile-yellow
+                // Standard tile colors for fallback (if images fail or for non-image tiles)
+                tileBlue: '#3b82f6',
+                tileYellow: '#f59e0b',
+                tileRed: '#ef4444',
+                tileBlack: '#1f2937',
+                tileTeal: '#14b8a6',
+                tileStartingPlayer: '#8b5cf6',
+              },
+              fontFamily: {
+                'display': ['Playfair Display', 'serif'],
+                'sans': ['Raleway', 'sans-serif'],
+              },
+            }
+          }
+        }
+      </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Import Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@300;400;600&display=swap');
+        
+        /* Animation for form appearance */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .form-animation {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+
+        /* Input focus effect - useful if forms/inputs are added to game page later */
+        .focus-ring:focus {
+            box-shadow: 0 0 0 3px rgba(42, 91, 156, 0.3); /* azulBlue with opacity */
+            border-color: #2a5b9c !important; /* azulBlue */
+        }
+
+        /* Tile and Slot Styles */
+        .tile {
+            width: 2.5rem; /* w-10 */
+            height: 2.5rem; /* h-10 */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #cbd5e1; /* slate-300 */
+            margin: 0.125rem; /* space-0.5 approx */
+            font-weight: bold;
+            overflow: hidden;
+            border-radius: 0.25rem; /* rounded-sm */
+            cursor: pointer; /* Make tiles feel interactive */
+            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+        }
+        .tile:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        .tile img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover; /* Changed to cover to fill the tile, assuming square images */
+            border-radius: 0.125rem; /* slightly rounded images inside tile */
+        }
+        /* Fallback tile colors using defined palette */
+        .tile-blue-bg { background-color: #3b82f6; color: white; } 
+        .tile-yellow-bg { background-color: #f59e0b; color: black; }
+        .tile-red-bg { background-color: #ef4444; color: white; } 
+        .tile-black-bg { background-color: #1f2937; color: white; }
+        .tile-teal-bg { background-color: #14b8a6; color: white; }
+        .tile-starting-player-bg {
+            background-color: #8b5cf6; /* tileStartingPlayer from Tailwind config */
+            color: white; 
+            font-size: 1rem; /* text-base, was text-xl */
+            font-weight: bold;
+            line-height: 2.5rem; /* Ensure 'S' is centered vertically in a 2.5rem tile */
+        }
+        .tile-unknown-bg {
+            background-color: #94a3b8; /* slate-400 */
+            color: white;
+            font-size: 1.25rem;
+            font-weight: bold;
+            line-height: 1;
+        }
+        
+        .tile-empty-slot {
+            background-color: #e2e8f0; /* slate-200 */
+            border-style: dashed;
+        }
+        .pattern-line-slot, .wall-slot, .floor-line-slot {
+            width: 2.5rem; /* w-10 */
+            height: 2.5rem; /* h-10 */
+            border: 1px dashed #94a3b8; /* slate-400 */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0.125rem;
+            border-radius: 0.25rem; /* rounded-sm */
+        }
+         /* Wall slot placeholder (for tiles not yet placed) */
+        .wall-slot-placeholder img {
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body class="bg-azulCream font-sans min-h-screen py-2 px-2 md:px-4">
+
+    <div id="game-container" class="form-animation container mx-auto p-0 md:p-0">
+        <header class="mb-4 py-4">
+            <a href="index.html" class="block text-center mb-1 text-azulBlue hover:text-azulAccent transition-colors duration-300">
+                <span class="text-xl font-display">AZUL</span>
+            </a>
+            <h1 class="text-2xl font-bold text-center text-azulBlue font-display">Game Board</h1>
+        </header>
+
+        <!-- Loading Indicator -->
+        <div id="loading-state" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 text-white text-xl"><p>Loading game data... <i class="fas fa-spinner fa-spin ml-3"></i></p></div>
+        
+        <!-- Error Display -->
+        <div id="error-state" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow-md my-4 mx-auto max-w-xl" role="alert">
+            <p class="font-bold">Error</p>
+            <p id="error-text-game">Something went wrong.</p>
+                </div>
+
+        <!-- Game Info -->
+        <div id="game-info" class="mb-4 p-3 bg-white rounded-lg shadow-md border border-gray-200 flex flex-wrap justify-between items-center">
+            <h2 class="text-lg font-semibold mb-2 text-azulBlue font-display w-full sm:w-auto md:mb-0">Game Status</h2>
+            <div class="flex flex-wrap gap-x-2 gap-y-1 text-xs text-gray-700">
+                <p class="mr-3">Round: <span id="round-number" class="font-mono font-semibold text-azulBlue">0</span></p>
+                <p class="mr-3">Player Turn: <span id="current-player-name" class="font-mono font-semibold text-azulBlue">N/A</span></p>
+                <p class="hidden mr-3">ID: <span id="current-player-id" class="font-mono font-semibold text-azulBlue"></span></p>
+            </div>
+            <div id="connection-status-container" class="flex items-center order-first sm:order-none sm:mr-auto"></div>
+            <div class="flex items-center gap-x-2 mt-2 sm:mt-0 ml-auto">
+                <button id="how-to-play-button" class="bg-azulAccent text-white px-2 py-1 rounded-md hover:bg-opacity-80 text-xs shadow">How to Play</button>
+                <button id="leave-game-button" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-md text-xs shadow">Leave Game</button>
+            </div>
+        </div>
+
+        <!-- Main Game Layout: Flex container for horizontal layout on larger screens -->
+        <div class="flex flex-col lg:flex-row gap-4">
+            
+            <!-- Chat Panel (Left Column) -->
+            <div id="chat-panel" class="lg:w-80 order-last lg:order-first">
+                <div class="bg-white rounded-lg shadow-lg border border-gray-200 h-fit max-h-[600px] flex flex-col">
+                    <!-- Chat Header with Toggle -->
+                    <div class="bg-azulBlue text-white p-3 rounded-t-lg flex items-center justify-between cursor-pointer" id="chat-toggle">
+                        <h3 class="font-semibold">Game Chat 💬</h3>
+                        <i id="chat-toggle-icon" class="fas fa-chevron-down transition-transform duration-200"></i>
+                    </div>
+                    
+                    <!-- Chat Container (Collapsible) -->
+                    <div id="chat-container" class="flex flex-col flex-grow">
+                        <!-- Chat Messages Area -->
+                        <div id="chat-messages" class="h-80 overflow-y-auto p-3 space-y-2 border-b border-gray-200">
+                            <div class="text-center text-gray-500 text-sm italic">
+                                Chat will appear here when players send messages...
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Input Area -->
+                        <div class="p-3 bg-gray-50 rounded-b-lg">
+                            <div class="flex gap-2">
+                                <input 
+                                    type="text" 
+                                    id="chat-input" 
+                                    placeholder="Type your message..." 
+                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-azulBlue focus:border-azulBlue text-sm"
+                                    maxlength="500"
+                                >
+                                <button 
+                                    id="chat-send" 
+                                    class="bg-azulBlue text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors duration-200"
+                                >
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <div class="flex justify-between items-center mt-1 text-xs text-gray-500">
+                                <span>Press Enter to send</span>
+                                <span id="char-count">500</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Left Column: Central Play Area -->
+            <div id="tile-offer-area" class="lg:w-1/3 p-3 bg-white rounded-lg shadow-lg border border-gray-200 space-y-3 flex flex-col">
+                <h3 class="text-lg font-bold font-display text-azulBlue mb-1 text-center">Central Play Area</h3>
+                
+                            <!-- Table Center -->
+                <div id="table-center-section" class="flex-shrink-0">
+                    <h4 class="text-md font-semibold text-gray-700 font-display mb-1">Table Center</h4>
+                    <div id="table-center-tiles" class="flex flex-wrap justify-center gap-1 p-1 border border-sky-200 rounded bg-sky-50 shadow-sm min-h-[3.5rem]">
+                        <!-- JS will generate table center tiles here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Factory Displays -->
+                <div id="factory-displays-section" class="flex-grow overflow-y-auto">
+                    <h4 class="text-md font-semibold text-gray-700 font-display mb-1">Factory Displays</h4>
+                    <div id="factory-displays" class="flex flex-wrap justify-center gap-1">
+                        <!-- JS will generate factory displays here -->
+                    </div>
+                            </div>
+                        </div>
+                        
+            <!-- Right Column: Player Boards & Info -->
+            <div id="player-area" class="lg:w-2/3 space-y-4">
+                <!-- Chosen Tiles Display for Local Player -->
+                <div id="chosen-tiles-container" class="p-2 bg-yellow-100 border-2 border-yellow-400 rounded-lg shadow-md hidden">
+                    <h4 class="text-sm font-semibold text-yellow-700 font-display mb-1">Your Chosen Tiles:</h4>
+                    <div id="chosen-tiles-display" class="flex flex-wrap gap-1 min-h-[2.25rem]">
+                        <!-- JS will populate chosen tiles here -->
+                                </div>
+                    <p class="text-xs text-yellow-600 mt-1 italic">Click on your board to place these tiles.</p>
+                                </div>
+                
+                <!-- Current Player Board -->
+                <div id="current-player-board-container" class="p-3 bg-white rounded-lg shadow-xl border-2 border-azulBlue">
+                    <h3 class="text-lg font-bold font-display text-azulBlue mb-2"><span id="local-player-name" class="font-bold">Your</span> Board</h3>
+                    <div id="player-board">
+                        <div class="flex flex-col md:flex-row justify-between items-start mb-1 md:space-x-2">
+                            <!-- Pattern Lines -->
+                            <div id="pattern-lines" class="space-y-1 w-full md:w-auto mb-1 md:mb-0">
+                                <!-- JS will generate 5 pattern lines here, title comes from renderer -->
+                            </div>
+                            <!-- Wall -->
+                            <div id="wall" class="grid grid-cols-5 gap-0.5 w-full md:w-auto">
+                                <!-- JS will generate wall here, title comes from renderer -->
+                            </div>
+                        </div>
+                        <!-- Floor Line -->
+                        <div id="floor-line" class="mt-4">
+                            <h4 class="text-lg font-semibold text-gray-700 font-display mb-2">Floor Line</h4>
+                            <div class="flex flex-wrap space-x-1">
+                                <!-- JS will generate floor line slots here -->
+                            </div>
+                        </div>
+                        <p class="mt-3 text-lg"><span class="text-gray-700 font-semibold">Score:</span> <span id="player-score" class="font-mono font-bold text-azulBlue text-xl">0</span></p>
+                        </div>
+                    </div>
+                    
+                <!-- Opponent Boards Placeholder -->
+                <div id="opponent-boards-container" class="space-y-6">
+                    <!-- JS will populate opponent boards here -->
+                        </div>
+                    </div>
+                </div>
+                
+    </div>
+
+    <!-- How to Play Modal (Initially Hidden) -->
+    <div id="how-to-play-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-azulCream p-6 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto form-animation">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-azulBlue font-display">How to Play Azul</h2>
+                <button id="close-how-to-play-button" class="text-gray-600 hover:text-red-500 text-2xl">&times;</button>
+            </div>
+            <div class="space-y-3 text-gray-700 prose prose-sm max-w-none">
+                <p><strong>Objective:</strong> Score the most points by strategically drafting tiles and arranging them on your player board.</p>
+                <p><strong>Game Flow (Simplified):</strong></p>
+                <ol class="list-decimal list-inside">
+                    <li><strong>Tile Offering:</strong> Players take turns drafting tiles:
+                        <ul class="list-disc list-inside ml-4">
+                            <li>Choose all tiles of the <em>same color</em> from one Factory Display. Move the remaining tiles from that display to the Table Center.</li>
+                            <li>OR, choose all tiles of the <em>same color</em> from the Table Center. If you are the first to take from the Table Center in a round, you also take the Starting Player tile (and lose 1 point).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Placing Tiles:</strong> Place the drafted tiles onto one of your Pattern Lines on your player board. 
+                        <ul class="list-disc list-inside ml-4">
+                            <li>A pattern line can only hold tiles of one color.</li>
+                            <li>You cannot place tiles of a color in a pattern line if your Wall already has that color in the corresponding row.</li>
+                            <li>If tiles don't fit or you choose to, they go to your Floor Line (negative points!).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Wall Tiling:</strong> When a Pattern Line is full, one tile moves to the corresponding space on your Wall. Score points immediately based on adjacent tiles.</li>
+                    <li><strong>End of Round:</strong> Refill Factory Displays. The player with the Starting Player tile begins the next round.</li>
+                </ol>
+                <p><strong>Game End:</strong> The game ends after the round in which at least one player completes a horizontal row of 5 tiles on their Wall.</p>
+                <p><strong>Bonus Scoring:</strong> Additional points for completed rows, columns, and sets of 5 tiles of the same color on your Wall.</p>
+                <p class="italic">This is a very basic overview. Refer to the official rulebook for complete details!</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="mt-8 py-4 text-center text-sm text-gray-500">
+        <p>© 2025 Azul Game</p>
+        <!-- Diagnostic link will be added here by JavaScript -->
+    </footer>
+
+    </div> <!-- container -->
+    
+    <script type="module" src="js/game.js"></script>
+    <script type="module" src="js/gameRenderer.js"></script>
+    <script type="module" src="js/chatClient.js"></script>
+</body>
+</html>

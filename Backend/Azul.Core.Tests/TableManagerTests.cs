@@ -59,7 +59,7 @@ namespace Azul.Core.Tests
             type.AssertInterfaceMethod(nameof(ITableManager.JoinOrCreateTable), typeof(ITable), typeof(User), typeof(ITablePreferences));
             type.AssertInterfaceMethod(nameof(ITableManager.LeaveTable), typeof(void), typeof(Guid), typeof(User));
             type.AssertInterfaceMethod(nameof(ITableManager.FillWithArtificialPlayers), typeof(void), typeof(Guid), typeof(User));
-            type.AssertInterfaceMethod(nameof(ITableManager.StartGameForTable), typeof(IGame), typeof(Guid));
+            type.AssertInterfaceMethod(nameof(ITableManager.StartGameForTable), typeof(IGame), typeof(Guid), typeof(Guid));
         }
 
         [MonitoredTest]
@@ -158,7 +158,8 @@ namespace Azul.Core.Tests
             // Arrange
             User user1 = new UserBuilder().Build();
             User user2 = new UserBuilder().Build();
-            var tableMockBuilder = new TableMockBuilder().WithSeatedUsers([user1, user2]);
+            // Setup table with user1 as host
+            var tableMockBuilder = new TableMockBuilder().WithSeatedUsers([user1, user2]).WithHostPlayerId(user1.Id);
             Mock<ITable> tableMock = tableMockBuilder.Mock;
             ITable table = tableMockBuilder.Object;
             
@@ -168,8 +169,8 @@ namespace Azul.Core.Tests
             IGame createdGame = new GameMockBuilder().Object;
             _gameFactoryMock.Setup(f => f.CreateNewForTable(table)).Returns(createdGame);
 
-            // Act
-            IGame returnedGame = _tableManager.StartGameForTable(table.Id);
+            // Act - Pass user1.Id as the host trying to start the game
+            IGame returnedGame = _tableManager.StartGameForTable(table.Id, user1.Id);
 
             // Assert
             _tableRepositoryMock.Verify(repository => repository.Get(table.Id), Times.Once, "Table is not retrieved correctly");
@@ -184,16 +185,17 @@ namespace Azul.Core.Tests
         {
             // Arrange
             User user1 = new UserBuilder().Build();
-            var tableMockBuilder = new TableMockBuilder().WithSeatedUsers([user1]);
-            Mock<ITable> tableMock = tableMockBuilder.Mock;
+            // Setup table with user1 as host
+            var tableMockBuilder = new TableMockBuilder().WithSeatedUsers([user1]).WithHostPlayerId(user1.Id);
+            Mock<ITable> tableMock = tableMockBuilder.Mock; // Not strictly needed for this test's verifications but good for consistency
             ITable table = tableMockBuilder.Object;
 
             _tableRepositoryMock.Setup(r => r.Get(It.Is<Guid>(id => id != table.Id))).Throws<DataNotFoundException>();
             _tableRepositoryMock.Setup(r => r.Get(table.Id)).Returns(table);
 
-            // Act + Assert
-            Assert.That(() => _tableManager.StartGameForTable(table.Id),
-                Throws.InvalidOperationException.With.Message.ContainsOne("not enough", "niet genoeg"));
+            // Act + Assert - Pass user1.Id as the host trying to start the game
+            Assert.That(() => _tableManager.StartGameForTable(table.Id, user1.Id),
+                Throws.InvalidOperationException.With.Message.ContainsOne("not full", "not enough", "niet genoeg"));
 
             _tableRepositoryMock.Verify(repository => repository.Get(table.Id), Times.Once, "Table is not retrieved correctly");
             _gameRepositoryMock.Verify(r => r.Add(It.IsAny<IGame>()), Times.Never, "A game was added to the repository");

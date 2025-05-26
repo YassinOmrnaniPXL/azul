@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azul Audio System Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        azulPrimary: '#2563eb',
+                        azulSecondary: '#1d4ed8',
+                        azulAccent: '#fbbf24',
+                        azulBlue: '#1e40af',
+                        azulCream: '#fef3c7'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-azulBlue mb-8">🎵 Azul Audio System Test</h1>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Sound Effects Test</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <button onclick="testSound('tileClick')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm">
+                    Tile Click
+                </button>
+                <button onclick="testSound('tilePlace')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm">
+                    Tile Place
+                </button>
+                <button onclick="testSound('tilePickup')" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm">
+                    Tile Pickup
+                </button>
+                <button onclick="testSound('scoring')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded text-sm">
+                    Scoring
+                </button>
+                <button onclick="testSound('lineComplete')" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm">
+                    Line Complete
+                </button>
+                <button onclick="testSound('turnStart')" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded text-sm">
+                    Turn Start
+                </button>
+                <button onclick="testSound('victory')" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded text-sm">
+                    Victory
+                </button>
+                <button onclick="testSound('errorSound')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm">
+                    Error Sound
+                </button>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Music Test</h2>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="testMusic('ambient')" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded">
+                    Play Ambient
+                </button>
+                <button onclick="testMusic('gameplay')" class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded">
+                    Play Gameplay
+                </button>
+                <button onclick="stopAllMusic()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                    Stop Music
+                </button>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Audio Status</h2>
+            <div id="audio-status" class="text-gray-600">
+                Click "Initialize Audio" to start testing
+            </div>
+            <button onclick="initializeAudio()" class="mt-4 bg-azulPrimary hover:bg-azulSecondary text-white px-6 py-2 rounded">
+                Initialize Audio
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { audioManager, playSfx, playMusic, stopMusic } from './js/audioManager.js';
+        
+        let audioInitialized = false;
+        
+        window.initializeAudio = async () => {
+            if (audioInitialized) return;
+            
+            try {
+                await audioManager.initialize();
+                audioInitialized = true;
+                document.getElementById('audio-status').innerHTML = `
+                    <div class="text-green-600 font-semibold">✅ Audio system initialized successfully!</div>
+                    <div class="text-sm text-gray-500 mt-2">
+                        • Sound effects: ${audioManager.isSfxEnabled ? 'Enabled' : 'Disabled'}<br>
+                        • Background music: ${audioManager.isMusicEnabled ? 'Enabled' : 'Disabled'}<br>
+                        • Master volume: ${Math.round(audioManager.masterVolume * 100)}%
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('audio-status').innerHTML = `
+                    <div class="text-red-600 font-semibold">❌ Failed to initialize audio system</div>
+                    <div class="text-sm text-gray-500 mt-2">Error: ${error.message}</div>
+                `;
+            }
+        };
+        
+        window.testSound = (soundId) => {
+            if (!audioInitialized) {
+                alert('Please initialize audio first');
+                return;
+            }
+            playSfx(soundId);
+            console.log(`🎵 Played sound: ${soundId}`);
+        };
+        
+        window.testMusic = (trackId) => {
+            if (!audioInitialized) {
+                alert('Please initialize audio first');
+                return;
+            }
+            playMusic(trackId, true);
+            console.log(`🎵 Playing music: ${trackId}`);
+        };
+        
+        window.stopAllMusic = () => {
+            if (!audioInitialized) {
+                alert('Please initialize audio first');
+                return;
+            }
+            stopMusic(true);
+            console.log('🎵 Stopped all music');
+        };
+        
+        // Auto-initialize on first user interaction
+        document.addEventListener('click', () => {
+            if (!audioInitialized) {
+                initializeAudio();
+            }
+        }, { once: true });
+    </script>
+</body>
+</html> 

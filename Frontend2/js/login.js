@@ -67,8 +67,24 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (data.token) {
                         sessionStorage.setItem("token", data.token);
                     }
-                } catch (tokenError) {
-                    console.error("Error parsing token response:", tokenError);
+                    if (data.user && data.user.id) {
+                        localStorage.setItem('userId', data.user.id);
+                        console.log('Stored userId:', data.user.id);
+                    } else {
+                        console.warn('User ID not found in login response.');
+                    }
+                    if (data.user && data.user.userName) {
+                        localStorage.setItem('userName', data.user.userName);
+                        console.log('Stored userName:', data.user.userName);
+                    } else {
+                        console.warn('User Name not found in login response.');
+                    }
+                } catch (jsonParseError) {
+                    console.error("Error parsing JSON response from token endpoint:", jsonParseError);
+                    errorDiv.textContent = "Received an invalid response from the server after login.";
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Inloggen';
+                    return;
                 }
                 window.location.href = "lobby.html";
             } else if (response.status === 401) {

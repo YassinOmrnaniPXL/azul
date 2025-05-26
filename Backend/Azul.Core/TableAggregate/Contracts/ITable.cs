@@ -35,6 +35,11 @@ public interface ITable
     Guid GameId { get; set; }
 
     /// <summary>
+    /// The unique identifier of the player who created/hosts the table.
+    /// </summary>
+    Guid HostPlayerId { get; } // Read-only after creation
+
+    /// <summary>
     /// Adds a player to the table.
     /// </summary>
     /// <param name="user">User for which a player should be created</param>

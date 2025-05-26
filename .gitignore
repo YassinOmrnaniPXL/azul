@@ -492,3 +492,92 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+
+# 🚫 Azul Game Project - Git Ignore Rules
+
+## 🏗️ Build Artifacts
+bin/
+obj/
+out/
+
+## 🔧 Visual Studio / VS Code
+.vs/
+.vscode/
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## 📦 NuGet
+packages/
+*.nupkg
+*.snupkg
+.nuget/
+
+## 🗄️ Database
+*.db
+*.sqlite
+*.sqlite3
+
+## 🔑 Secrets & Environment
+appsettings.local.json
+appsettings.development.json
+.env
+.env.local
+*.env
+
+## 📝 Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+## 🧪 Test Results
+TestResults/
+[Tt]est[Rr]esult*/
+coverage.json
+coverage.xml
+*.coverage
+*.coveragexml
+
+## 📱 Frontend Dependencies
+node_modules/
+npm-debug.log
+.npm
+.eslintcache
+
+## 🐳 Docker
+Dockerfile.local
+docker-compose.override.local.yml
+
+## 🏃‍♂️ Runtime Files
+*.tmp
+*.temp
+*.pid
+
+## 🔧 IDE & Editor Files
+.idea/
+*.swp
+*.swo
+*~
+
+## 📊 System Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+## 🚀 Deployment
+publish/
+*.pubxml
+*.publishsettings
+
+## 📋 Generated Documentation
+_site/
+.sass-cache/
+
+# ✅ Keep These Important Files
+!.gitkeep
+!.editorconfig

@@ -1,59 +1,73 @@
-﻿using Azul.Core.GameAggregate;
-using Azul.Core.GameAggregate.Contracts;
-using Azul.Core.PlayerAggregate;
-using Azul.Core.PlayerAggregate.Contracts;
-using Azul.Core.TableAggregate;
-using Azul.Core.TableAggregate.Contracts;
 using Azul.Core.UserAggregate;
 using Azul.Infrastructure;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using Azul.Core.TableAggregate.Contracts;
+using Azul.Core.TableAggregate;
+using Azul.Core.GameAggregate.Contracts;
+using Azul.Core.GameAggregate;
+using Azul.Core.PlayerAggregate.Contracts;
+using Azul.Core.PlayerAggregate;
 
 namespace Azul.Bootstrapper;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddCore(this IServiceCollection services)
     {
+        // Register Core services
+        services.AddScoped<ITableManager, TableManager>();
+        services.AddScoped<ITableFactory, TableFactory>();
+        services.AddScoped<IGameFactory, GameFactory>();
+        services.AddScoped<IGamePlayStrategy, GamePlayStrategy>();
+        services.AddScoped<IGameService, GameService>();
+        
+        return services;
+    }
+
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
+    {
+        // Add Entity Framework DbContext
         services.AddDbContext<AzulDbContext>(options =>
-        {
-            string connectionString = configuration.GetConnectionString("AzulDbConnection")!;
-            options.UseSqlServer(connectionString).EnableSensitiveDataLogging();
-        });
+            options.UseSqlServer(connectionString));
 
-        services.AddIdentity<User, IdentityRole<Guid>>(options =>
-            {
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-                options.Lockout.MaxFailedAccessAttempts = 8;
-                options.Lockout.AllowedForNewUsers = true;
+        // Add Extended DbContext for friend system
+        services.AddDbContext<AzulExtendedDbContext>(options =>
+            options.UseSqlServer(connectionString));
 
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireDigit = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequiredLength = 5;
-
-                options.SignIn.RequireConfirmedEmail = false;
-                options.SignIn.RequireConfirmedPhoneNumber = false;
-
-                options.User.RequireUniqueEmail = true;
-            })
-            .AddEntityFrameworkStores<AzulDbContext>()
-            .AddDefaultTokenProviders();
-
+        // Register repositories as Singleton for in-memory storage
         services.AddSingleton<ITableRepository, InMemoryTableRepository>();
         services.AddSingleton<IGameRepository, InMemoryGameRepository>();
-    }
 
-    public static void AddCore(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddScoped<ITableManager, TableManager>();
-        services.AddSingleton<ITableFactory, TableFactory>();
-        services.AddScoped<IGameFactory, GameFactory>();
-        services.AddScoped<IGameService, GameService>();
-        services.AddScoped<IGamePlayStrategy, GamePlayStrategy>();
-    }
-}
+        // Use AddIdentityCore instead of AddIdentity to avoid overriding authentication schemes
+        services.AddIdentityCore<User>(options =>
+        {
+            // Password settings
+            options.Password.RequireDigit = true;
+            options.Password.RequiredLength = 6;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireLowercase = false;
 
+            // User settings
+            options.User.RequireUniqueEmail = true;
+            options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+
+            // Signin settings
+            options.SignIn.RequireConfirmedEmail = false;
+            options.SignIn.RequireConfirmedPhoneNumber = false;
+            options.SignIn.RequireConfirmedAccount = false;
+
+            // Lockout settings
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.AllowedForNewUsers = true;
+        })
+        .AddRoles<IdentityRole<Guid>>()              // Added this for role support
+        .AddEntityFrameworkStores<AzulExtendedDbContext>()  // Use extended context for Identity
+        .AddDefaultTokenProviders();
+
+        return services;
+    }
+} 

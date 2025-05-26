@@ -4,7 +4,9 @@ using Azul.Api.Models.Output;
 using Azul.Core.GameAggregate.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Threading.Tasks;
+using System.Text.Json;
+using Azul.Api.WS;
 
 namespace Azul.Api.Controllers
 {
@@ -17,11 +19,15 @@ namespace Azul.Api.Controllers
     {
         private readonly IGameService _gameService;
         private readonly IMapper _mapper;
+        private readonly IGameEventBus _eventBus;
+        private readonly ILogger<GamesController> _logger;
 
-        public GamesController(IGameService gameService, IMapper mapper)
+        public GamesController(IGameService gameService, IMapper mapper, IGameEventBus eventBus, ILogger<GamesController> logger)
         {
             _gameService = gameService;
             _mapper = mapper;
+            _eventBus = eventBus;
+            _logger = logger;
         }
 
         /// <summary>

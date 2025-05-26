@@ -11,6 +11,7 @@ namespace Azul.Api.Models.Output
         public List<PlayerModel> SeatedPlayers { get; set; } = new List<PlayerModel>();
         public bool HasAvailableSeat { get; set; }
         public Guid GameId { get; set; }
+        public Guid HostPlayerId { get; set; }
 
         private class MappingProfile : Profile
         {

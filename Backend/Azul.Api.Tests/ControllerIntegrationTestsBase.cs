@@ -66,8 +66,10 @@ public abstract class ControllerIntegrationTestsBase<TController> where TControl
         ClientA = factory.CreateClient();
         ClientB = factory.CreateClient();
 
-        PlayerAAccessPass = RegisterAndLoginUser(ClientA, "PlayerA", null);
-        PlayerBAccessPass = RegisterAndLoginUser(ClientB, "PlayerB", new DateOnly(2000, 3, 15));
+        // Make usernames unique per test class to avoid conflicts
+        string testClassName = typeof(TController).Name;
+        PlayerAAccessPass = RegisterAndLoginUser(ClientA, $"PlayerA_{testClassName}", null);
+        PlayerBAccessPass = RegisterAndLoginUser(ClientB, $"PlayerB_{testClassName}", new DateOnly(2000, 3, 15));
     }
 
     [OneTimeTearDown]
@@ -83,17 +85,38 @@ public abstract class ControllerIntegrationTestsBase<TController> where TControl
         {
             UserName = userName,
             Email = $"{userName}@test.be",
-            Password = "password",
+            Password = "password123",
             LastVisitToPortugal = lastVisitToPortugal
         };
-        client.PostAsJsonAsync("api/authentication/register", registerModel).Wait();
+        
+        // Register user and check if it succeeded
+        var registerResponse = client.PostAsJsonAsync("api/authentication/register", registerModel).Result;
+        if (!registerResponse.IsSuccessStatusCode)
+        {
+            var registerError = registerResponse.Content.ReadAsStringAsync().Result;
+            throw new Exception($"Registration failed for {userName}: {registerResponse.StatusCode} - {registerError}");
+        }
+        
+        // Login and get token
         HttpResponseMessage response = client.PostAsJsonAsync("api/authentication/token", new LoginModel
         {
             Email = registerModel.Email,
             Password = registerModel.Password
         }).Result!;
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            var loginError = response.Content.ReadAsStringAsync().Result;
+            throw new Exception($"Login failed for {userName}: {response.StatusCode} - {loginError}");
+        }
 
-        AccessPassModel accessPassModel = response.Content.ReadAsAsync<AccessPassModel>().Result;
+        AccessPassModel? accessPassModel = response.Content.ReadAsAsync<AccessPassModel>().Result;
+        if (accessPassModel == null)
+        {
+            var responseContent = response.Content.ReadAsStringAsync().Result;
+            throw new Exception($"AccessPassModel is null for {userName}. Response content: {responseContent}");
+        }
+        
         client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessPassModel.Token);
         return accessPassModel;
     }
@@ -110,7 +133,7 @@ public abstract class ControllerIntegrationTestsBase<TController> where TControl
         TableModel table = response.Content.ReadAsAsync<TableModel>().Result;
         Assert.That(table, Is.Not.Null, "User A could not correctly add a table.");
         Assert.That(table.SeatedPlayers.Count, Is.EqualTo(1), "User A could not correctly create a table. There should be 1 seated player");
-        Assert.That(table.SeatedPlayers.First().Name, Is.EqualTo(PlayerAAccessPass.User.UserName),
+        Assert.That(table.SeatedPlayers.First().Name, Is.EqualTo(PlayerAAccessPass.User.DisplayName ?? PlayerAAccessPass.User.UserName),
             "User A could not correctly create a table. The seated player has an incorrect name");
         Assert.That(table.SeatedPlayers.First().Id, Is.EqualTo(PlayerAAccessPass.User.Id),
             "User A could not correctly create a table. The seated player has an incorrect id (should be the id of the user");
@@ -120,9 +143,11 @@ public abstract class ControllerIntegrationTestsBase<TController> where TControl
             "User A could not correctly create a table. The table should have available seats left.");
         Assert.That(table.Preferences.NumberOfPlayers, Is.EqualTo(tablePreferences.NumberOfPlayers),
             "User A could not correctly create a table. The table should have the preferences that were posted.");
+        
+        Guid tableId = table.Id; // Store table ID for starting the game
 
         //User B joins the table
-        response = ClientB.PostAsJsonAsync("api/tables/join-or-create", tablePreferences).Result;
+        response = ClientB.PostAsJsonAsync("api/tables/join-or-create", tablePreferences).Result; // This should find the table by A
         Assert.That((int)response.StatusCode, Is.EqualTo(StatusCodes.Status200OK), "User B could not correctly join the table.");
         table = response.Content.ReadAsAsync<TableModel>().Result;
         Assert.That(table, Is.Not.Null, "User B could not correctly join the available table.");
@@ -132,8 +157,22 @@ public abstract class ControllerIntegrationTestsBase<TController> where TControl
                        "User B could not correctly join the available table. The seated players should have different names");
         Assert.That(table.HasAvailableSeat, Is.False,
             "User B could not correctly join the available table. The table should not have any available seats left.");
+        //Assert.That(table!.GameId, Is.Not.EqualTo(Guid.Empty), // OLD ASSERTION
+        //    "When the table is full, a game should be started, but the Game Id is empty");
+        Assert.That(table!.GameId, Is.EqualTo(Guid.Empty), // NEW ASSERTION: GameId is still empty
+            "After User B joins, GameId should still be empty as game is not auto-started.");
+
+        // User A (assumed host) starts the game
+        response = ClientA.PostAsync($"api/tables/{tableId}/start-game", null).Result;
+        Assert.That((int)response.StatusCode, Is.EqualTo(StatusCodes.Status200OK), $"User A (host) could not start the game for table {tableId}. Status: {response.StatusCode}, Content: {response.Content.ReadAsStringAsync().Result}");
+        
+        // Re-fetch the table to get the populated GameId
+        response = ClientA.GetAsync($"api/tables/{tableId}").Result;
+        Assert.That((int)response.StatusCode, Is.EqualTo(StatusCodes.Status200OK), $"Could not re-fetch table {tableId} after starting game. Status: {response.StatusCode}");
+        table = response.Content.ReadAsAsync<TableModel>().Result;
         Assert.That(table!.GameId, Is.Not.EqualTo(Guid.Empty),
-            "When the table is full, a game should be started, but the Game Id is empty");
+            $"After host starts the game, the GameId for table {tableId} should be populated.");
+
         return table;
     }
 }

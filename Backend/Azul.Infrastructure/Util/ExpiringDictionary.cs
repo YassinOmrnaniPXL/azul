@@ -12,7 +12,14 @@ public class ExpiringDictionary<TKey, TValue> where TKey : notnull
     {
         get
         {
-            return _entries.Values.Select(entry => entry.Value).ToList();
+            var now = DateTimeOffset.Now;
+            Console.WriteLine($"[VALUES] Checking {_entries.Count} entries at {now}");
+            var validEntries = _entries.Values
+                .Where(entry => !entry.IsExpired(now))
+                .Select(entry => entry.Value)
+                .ToList();
+            Console.WriteLine($"[VALUES] Found {validEntries.Count} valid entries out of {_entries.Count} total");
+            return validEntries;
         }
     }
 
@@ -30,20 +37,24 @@ public class ExpiringDictionary<TKey, TValue> where TKey : notnull
 
     public void AddOrReplace(TKey key, TValue value)
     {
+        Console.WriteLine($"[EXPIRING_DICT] Adding/Replacing key: {key}, LifeSpan: {_entryLifeSpan}");
         _entries.AddOrUpdate(key, k => new Entry(value, _entryLifeSpan), (k, oldValue) => new Entry(value, _entryLifeSpan));
-        StartScanForExpiredEntries();
+        Console.WriteLine($"[EXPIRING_DICT] After add: Total entries: {_entries.Count}");
+        // Don't scan on every add - this was causing immediate removal
+        // StartScanForExpiredEntries();
     }
 
     public bool TryGetValue(TKey key, out TValue value)
     {
         bool result = false;
-        value = default;
-        if (_entries.TryGetValue(key, out Entry entry))
+        value = default!;
+        if (_entries.TryGetValue(key, out Entry? entry) && !entry.IsExpired(DateTimeOffset.Now))
         {
             value = entry.Value;
             result = true;
         }
 
+        // Only scan occasionally, not on every access
         StartScanForExpiredEntries();
 
         return result;
@@ -51,13 +62,13 @@ public class ExpiringDictionary<TKey, TValue> where TKey : notnull
 
     public bool TryRemove(TKey key, out TValue removedValue)
     {
-        if (_entries.TryRemove(key, out Entry removedEntry))
+        if (_entries.TryRemove(key, out Entry? removedEntry))
         {
             removedValue = removedEntry.Value;
             return true;
         }
 
-        removedValue = default;
+        removedValue = default!;
         return false;
     }
 
@@ -75,13 +86,18 @@ public class ExpiringDictionary<TKey, TValue> where TKey : notnull
     private static void ScanForExpiredItems(ConcurrentDictionary<TKey, Entry> dictionary)
     {
         var now = DateTimeOffset.Now;
+        Console.WriteLine($"[EXPIRING_DICT] Starting expiration scan. Total entries: {dictionary.Count}");
+        int removedCount = 0;
         foreach (var keyValue in dictionary)
         {
             if (keyValue.Value.IsExpired(now))
             {
-                dictionary.TryRemove(keyValue.Key, out Entry _);
+                Console.WriteLine($"[EXPIRING_DICT] Removing expired key: {keyValue.Key}");
+                dictionary.TryRemove(keyValue.Key, out Entry? _);
+                removedCount++;
             }
         }
+        Console.WriteLine($"[EXPIRING_DICT] Expiration scan complete. Removed: {removedCount}, Remaining: {dictionary.Count}");
     }
 
     private class Entry
@@ -94,11 +110,17 @@ public class ExpiringDictionary<TKey, TValue> where TKey : notnull
         {
             Value = value;
             _expiration = DateTimeOffset.Now.Add(lifeTime);
+            Console.WriteLine($"[ENTRY] Created entry with expiration: {_expiration}, LifeTime: {lifeTime}");
         }
 
         public bool IsExpired(DateTimeOffset now)
         {
-            return now >= _expiration;
+            bool expired = now >= _expiration;
+            if (expired)
+            {
+                Console.WriteLine($"[ENTRY] Entry EXPIRED - Now: {now}, Expiration: {_expiration}, Diff: {now - _expiration}");
+            }
+            return expired;
         }
     }
 }

@@ -9,6 +9,7 @@ using Azul.Core.Tests.Extensions;
 using Azul.Core.TileFactoryAggregate.Contracts;
 using Azul.Core.UserAggregate;
 using Guts.Client.Core;
+using System.Collections.Generic;
 
 namespace Azul.Api.Tests;
 
@@ -231,7 +232,7 @@ public class GamesControllerIntegrationTests : ControllerIntegrationTestsBase<Ga
         Assert.That(player, Is.Not.Null, $"Player for user '{user.UserName}' not found in the game");
 
         string playerName = player!.Name;
-        Assert.That(playerName, Is.EqualTo(user.UserName), $"The name of the player should be the user name ({user.UserName})");
+        Assert.That(playerName, Is.EqualTo(user.DisplayName ?? user.UserName), $"The name of the player should be the display name or user name ({user.DisplayName ?? user.UserName})");
         Assert.That(player.Board, Is.Not.Null, $"Player '{playerName}' should have a board");
         Assert.That(player.TilesToPlace, Is.Not.Null, $"Player '{playerName}' should have a list to hold tiles to place");
         Assert.That(player.TilesToPlace.Count, Is.EqualTo(0), $"Player '{playerName}' should not have any tiles to place");
@@ -239,7 +240,7 @@ public class GamesControllerIntegrationTests : ControllerIntegrationTestsBase<Ga
             $"The last visit to Portugal of player '{playerName}' should be the same as the last visit to Portugal of user '{user.UserName}'");
 
         //Pattern lines
-        Assert.That(player.Board.PatternLines.Length, Is.EqualTo(5), $"Player '{playerName}' should have 5 pattern lines");
+        Assert.That(player.Board.PatternLines.Count, Is.EqualTo(5), $"Player '{playerName}' should have 5 pattern lines");
         for (int expectedPatternLineLength = 1; expectedPatternLineLength <= 5; expectedPatternLineLength++)
         {
             Assert.That(player.Board.PatternLines.Count(pl => pl.Length == expectedPatternLineLength), Is.EqualTo(1),
@@ -248,18 +249,21 @@ public class GamesControllerIntegrationTests : ControllerIntegrationTestsBase<Ga
         Assert.That(player.Board.PatternLines.All(pl => pl.NumberOfTiles == 0), Is.True, $"All pattern lines of player '{playerName}' should be empty");
 
         //Wall
-        Assert.That(player.Board.Wall.GetLength(0), Is.EqualTo(5), $"The wall of player '{playerName}' should have 5 rows");
-        Assert.That(player.Board.Wall.GetLength(1), Is.EqualTo(5), $"The wall of player '{playerName}' should have 5 columns");
-        for (int i = 0; i < player.Board.Wall.GetLength(0); i++)
+        Assert.That(player.Board.Wall.Count, Is.EqualTo(5), $"The wall of player '{playerName}' should have 5 rows");
+        if (player.Board.Wall.Any())
         {
-            for (int j = 0; j < player.Board.Wall.GetLength(1); j++)
+            Assert.That(player.Board.Wall[0].Count, Is.EqualTo(5), $"The wall of player '{playerName}' should have 5 columns");
+        }
+        for (int i = 0; i < player.Board.Wall.Count; i++)
+        {
+            for (int j = 0; j < player.Board.Wall[i].Count; j++)
             {
-                Assert.That(player.Board.Wall[i, j].HasTile, Is.False, $"All tile spots of the wall of player '{playerName}' should be empty");
+                Assert.That(player.Board.Wall[i][j].HasTile, Is.False, $"All tile spots of the wall of player '{playerName}' should be empty");
             }
         }
 
         //Floor line
-        Assert.That(player.Board.FloorLine.Length, Is.EqualTo(7), $"The floor line of player '{playerName}' should have 7 tile spots");
+        Assert.That(player.Board.FloorLine.Count, Is.EqualTo(7), $"The floor line of player '{playerName}' should have 7 tile spots");
         Assert.That(player.Board.FloorLine.All(ts => ts.HasTile == false), Is.True, $"All tile spots of the floor line of player '{playerName}' should be empty");
 
         return player;
@@ -438,11 +442,15 @@ public class GamesControllerIntegrationTests : ControllerIntegrationTestsBase<Ga
 
     private TileSpotModel FindTileInWall(BoardModel board, int rowIndex, TileType tileType)
     {
-        for (int i = 0; i < 5; i++)
+        if (rowIndex < 0 || rowIndex >= board.Wall.Count)
         {
-            if (board.Wall[rowIndex, i].Type == tileType)
+            throw new ArgumentOutOfRangeException(nameof(rowIndex), $"Row index {rowIndex} is out of bounds for the wall with {board.Wall.Count} rows.");
+        }
+        for (int i = 0; i < board.Wall[rowIndex].Count; i++)
+        {
+            if (board.Wall[rowIndex][i].Type == tileType)
             {
-                return board.Wall[rowIndex, i];
+                return board.Wall[rowIndex][i];
             }
         }
         throw new AssertionException($"Tile of type '{tileType}' not found in the wall of player on row with index {rowIndex}");

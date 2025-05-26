@@ -12,7 +12,7 @@ public static class WebApplicationExtensions
     public static void EnsureDatabaseIsCreated(this WebApplication app)
     {
         var scope = app.Services.CreateScope();
-        AzulDbContext context = scope.ServiceProvider.GetRequiredService<AzulDbContext>();
+        AzulExtendedDbContext context = scope.ServiceProvider.GetRequiredService<AzulExtendedDbContext>();
         ILogger logger = scope.ServiceProvider.GetRequiredService<ILogger<WebApplication>>();
         try
         {

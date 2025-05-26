@@ -1,19 +1,18 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Azul - Lobby</title>
-    <!-- Add TailwindCSS CDN -->
+    <title>Azul Game Lobby</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Expanded color palette inspired by Azul tiles
+        // Extended Azul color palette
         tailwind.config = {
           theme: {
             extend: {
               colors: {
                 azulBlue: '#2a5b9c', 
-                azulCream: '#fdf6e3',
+                azulCream: '#fdf6e3', 
                 azulAccent: '#e5a04f',
                 azulTile1: '#d95454', // red tile
                 azulTile2: '#5254d9', // deep blue tile
@@ -25,171 +24,196 @@
                 'display': ['Playfair Display', 'serif'],
                 'sans': ['Raleway', 'sans-serif'],
               },
-              animation: {
-                'float': 'float 6s ease-in-out infinite',
-                'scale': 'scale 5s ease-in-out infinite',
-              },
-              keyframes: {
-                float: {
-                  '0%, 100%': { transform: 'translateY(0)' },
-                  '50%': { transform: 'translateY(-10px)' },
-                },
-                scale: {
-                  '0%, 100%': { transform: 'scale(1)' },
-                  '50%': { transform: 'scale(1.05)' },
-                },
-              },
             }
           }
         }
       </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <script src="https://unpkg.com/@microsoft/signalr@latest/dist/browser/signalr.min.js"></script>
     <style>
         /* Import Google Fonts */
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@300;400;600&display=swap');
         
         /* Solid background instead of mosaic pattern */
         body {
-            background-color: #f8f5ee;
+            /* background-color: #f8f5ee; /* Replaced by Tailwind bg-azulCream */
         }
-
-        /* Content styling without backdrop blur */
-        .blurred-content {
-            background-color: white;
+        
+        /* Animation for form appearance */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-animation {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        
+        /* Form container without glass effect */
+        .glass-container { /* Will be applied to the main content div */
+            background: white;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
             position: relative;
             z-index: 10;
         }
         
-        /* Decorative Tiles */
-        .decorative-tile {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border-radius: 4px;
-            box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-            z-index: 1;
-            transform: rotate(var(--rotation));
-            animation: float 5s ease-in-out infinite;
-            animation-delay: var(--delay);
-        }
-        
-        /* Animation for content appearance */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
-            opacity: 0;
-        }
-        
-        .delay-100 { animation-delay: 0.1s; }
-        .delay-200 { animation-delay: 0.2s; }
-        .delay-300 { animation-delay: 0.3s; }
-        .delay-400 { animation-delay: 0.4s; }
-        .delay-500 { animation-delay: 0.5s; }
-
-        /* Tile selection styles */
-        .player-option {
+        /* Input focus effect */
+        .focus-ring {
             transition: all 0.3s ease;
-            cursor: pointer;
         }
         
-        .player-option:hover {
-            transform: translateY(-5px);
+        .focus-ring:focus {
+            box-shadow: 0 0 0 3px rgba(42, 91, 156, 0.3); /* azulBlue with opacity */
+            border-color: #2a5b9c; /* azulBlue */
         }
         
-        .player-option.selected {
-            border-color: #2a5b9c;
-            background-color: rgba(42, 91, 156, 0.1);
+        /* Button hover effect */
+        .btn-hover {
+            transition: all 0.3s ease;
+            background-size: 200% auto;
+            /* Default to azulBlue, can be overridden by specific bg-color classes if needed for other button types */
+            background-image: linear-gradient(to right, #2a5b9c 0%, #3a6bac 50%, #2a5b9c 100%);
+        }
+        
+        .btn-hover:hover {
+            background-position: right center;
+            transform: translateY(-2px);
+        }
+
+        .player-card {
+            transition: all 0.3s ease-in-out;
+        }
+        .player-card:hover {
+            transform: translateY(-2px); /* Adjusted hover effect */
+            box-shadow: 0 6px 12px -3px rgba(0, 0, 0, 0.1), 0 3px 5px -2px rgba(0, 0, 0, 0.05);
         }
     </style>
 </head>
-<body class="min-h-screen relative overflow-x-hidden">
-    <!-- Decorative Floating Tiles -->
-    <div class="decorative-tile bg-azulTile1" style="top: 15%; left: 10%; --rotation: 15deg; --delay: 0s;"></div>
-    <div class="decorative-tile bg-azulTile2" style="top: 70%; left: 5%; --rotation: -10deg; --delay: 0.5s;"></div>
-    <div class="decorative-tile bg-azulTile3" style="top: 20%; right: 10%; --rotation: 5deg; --delay: 1s;"></div>
-    <div class="decorative-tile bg-azulTile4" style="top: 80%; right: 15%; --rotation: -5deg; --delay: 1.5s;"></div>
-    <div class="decorative-tile bg-azulTile5" style="top: 50%; left: 90%; --rotation: 12deg; --delay: 2s;"></div>
-    
-    <!-- Account Button (Positioned Absolutely) -->
-    <div class="absolute top-4 right-4 z-20 fade-in delay-100">
-        <a href="useraccount.html" class="flex items-center justify-center w-12 h-12 rounded-full bg-white border-2 border-azulBlue text-azulBlue hover:bg-azulBlue hover:text-white transition duration-300 shadow-md">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-        </a>
-    </div>
-    
-    <div class="flex items-center justify-center min-h-screen py-12 px-4">
-        <div class="blurred-content p-8 md:p-12 rounded-xl shadow-xl max-w-2xl text-center border-4 border-azulBlue relative z-10 mx-auto">
-            <!-- Logo/Title -->
-            <h1 class="fade-in text-4xl md:text-5xl font-bold text-azulBlue mb-4 font-display tracking-wide">
-                AZUL LOBBY
-            </h1>
-            <p class="fade-in delay-100 text-xl text-azulAccent font-light italic font-display mb-8">Kies het aantal spelers</p>
-            
-            <!-- Player Selection Options -->
-            <div class="fade-in delay-200 grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- 2 Players Option -->
-                <div id="option-2" class="player-option border-2 p-4 rounded-lg shadow-md text-center">
-                    <div class="bg-azulTile1 w-16 h-16 mx-auto mb-3 rounded-lg flex items-center justify-center text-white text-2xl font-bold">2</div>
-                    <h3 class="font-display text-lg font-semibold">2 Spelers</h3>
-                    <p class="text-sm text-gray-600 mt-2">Ideaal voor een snelle partij</p>
-                </div>
-                
-                <!-- 3 Players Option -->
-                <div id="option-3" class="player-option border-2 p-4 rounded-lg shadow-md text-center">
-                    <div class="bg-azulTile3 w-16 h-16 mx-auto mb-3 rounded-lg flex items-center justify-center text-white text-2xl font-bold">3</div>
-                    <h3 class="font-display text-lg font-semibold">3 Spelers</h3>
-                    <p class="text-sm text-gray-600 mt-2">Meer spelers, meer strategieën</p>
-                </div>
-                
-                <!-- 4 Players Option -->
-                <div id="option-4" class="player-option border-2 p-4 rounded-lg shadow-md text-center">
-                    <div class="bg-azulTile4 w-16 h-16 mx-auto mb-3 rounded-lg flex items-center justify-center text-white text-2xl font-bold">4</div>
-                    <h3 class="font-display text-lg font-semibold">4 Spelers</h3>
-                    <p class="text-sm text-gray-600 mt-2">Volledige tafel voor maximaal plezier</p>
-                </div>
+<body class="bg-azulCream text-gray-800 font-sans flex flex-col min-h-screen">
+    <div id="main-container" class="flex-grow container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="text-center mb-8 relative">
+            <h1 class="text-4xl font-bold text-azulBlue font-display">Azul Game Lobby</h1>
+            <div class="absolute top-0 right-0 mt-2 mr-2">
+                <a href="useraccount.html"
+                   class="py-2 px-4 rounded-lg border-2 border-azulBlue text-azulBlue hover:bg-azulBlue hover:text-white transition duration-300 text-sm">
+                    My Account
+                </a>
             </div>
-            
-            <!-- Confirm Button -->
-            <button id="joinTableBtn" class="fade-in delay-300 inline-block py-3 px-8 border-2 border-azulBlue rounded-lg shadow-md text-lg font-medium text-white bg-azulBlue hover:bg-white hover:text-azulBlue transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                Deelnemen aan Spel
-            </button>
-            
-            <!-- Status Messages - Updated styling -->
-            <div id="statusMessage" class="fade-in delay-400 mt-6 p-4 rounded-lg hidden"></div>
-            
-            <!-- Table Status - Updated styling -->
-            <div id="tableStatus" class="fade-in delay-500 mt-8 p-6 rounded-lg border-2 border-azulAccent bg-azulCream/50 shadow-md hidden">
-                <h3 class="text-xl font-display font-semibold text-azulBlue mb-4">Tafelstatus</h3>
-                <div id="tableDetails" class="text-center p-3 bg-white/70 rounded-lg">
-                    <!-- Table details will be populated by JavaScript -->
-                </div>
-                
-                <!-- Action Buttons - Moved inside the table status and updated styling -->
-                <div id="actionButtons" class="mt-6 flex justify-center hidden">
-                    <button id="leaveTableBtn" class="py-3 px-6 bg-white border-2 border-azulTile1 text-azulTile1 rounded-lg hover:bg-azulTile1 hover:text-white transition-all duration-300 shadow-md flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        Tafel Verlaten
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Error Message -->
-            <div id="errorMessage" class="fade-in delay-400 mt-4 text-azulTile1 hidden"></div>
+        </header>
 
-            <!-- Decorative footer pattern -->
-            <div class="absolute bottom-0 left-0 right-0 h-4 bg-azulBlue rounded-b-lg opacity-60"></div>
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Game Tables and Actions -->
+            <div class="lg:col-span-2 space-y-8">
+
+        <!-- Error Message Display -->
+        <div id="error-message" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow-md my-6" role="alert">
+            <p class="font-bold">Error</p>
+            <p id="error-text">Something went wrong.</p>
+        </div>
+
+        <!-- Public Tables List Section -->
+        <section id="public-tables-section" class="mb-8 p-6 bg-white rounded-lg shadow-lg border border-gray-200">
+            <h2 class="text-2xl font-bold text-azulBlue font-display mb-4">Join a Game</h2>
+            <div id="public-tables-list" class="space-y-3">
+                <!-- JS will populate this. Example structure: -->
+                <!-- 
+                <div class="p-3 border rounded-md hover:shadow-md transition-shadow">
+                    <h3 class="font-semibold">Table hosted by PlayerX (2/4 players)</h3>
+                    <p class="text-sm text-gray-600">ID: abcdef12345</p>
+                    <button class="text-white bg-azulAccent hover:bg-opacity-80 px-3 py-1 rounded-md text-sm mt-2">Join Table</button>
+                </div> 
+                -->
+                <p id="no-public-tables-message" class="text-gray-500 italic">No public games available right now. Why not create one?</p>
+            </div>
+            <div class="mt-4">
+                <button id="refresh-tables-button" class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-azulAccent focus:ring-opacity-50 flex items-center justify-center">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh List
+                </button>
+            </div>
+        </section>
+
+        <!-- Friend System Section -->
+        <section id="friend-system-section" class="mb-8">
+            <div id="friend-system-container" class="h-80">
+                <!-- Friend system component will be initialized here -->
+            </div>
+        </section>
+
+        <!-- Game Preferences & Actions -->
+        <section id="preferences-section" class="p-6 bg-white rounded-lg shadow-lg border border-gray-200">
+            <h2 class="text-2xl font-bold text-azulBlue font-display mb-6">Create Your Own Game</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="num-players" class="block text-sm font-medium text-gray-700 mb-1">Number of Human Players (2-4):</label>
+                    <select id="num-players" name="num-players" class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none sm:text-sm">
+                        <option value="2">2 Players</option>
+                        <option value="3">3 Players</option>
+                        <option value="4">4 Players</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="num-ai" class="block text-sm font-medium text-gray-700 mb-1">Number of AI Opponents:</label>
+                    <select id="num-ai" name="num-ai" class="focus-ring mt-1 block w-full px-4 py-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none sm:text-sm">
+                        <option value="0">0 AI Players</option>
+                        <option value="1">1 AI Player</option>
+                        <option value="2">2 AI Players</option>
+                        <option value="3">3 AI Players</option>
+                    </select>
+                </div>
+            </div>
+            <button id="join-create-button" class="btn-hover w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-azulBlue focus:outline-none">
+                <i class="fas fa-search mr-2"></i>Find or Create Game
+            </button>
+        </section>
+
+        <!-- Lobby / Waiting Room Status -->
+        <div id="lobby-status-section" class="hidden mb-6 p-6 bg-white rounded-lg shadow-lg border border-gray-200">
+            <h2 class="text-2xl font-bold text-azulBlue font-display mb-4">Waiting for Players...</h2>
+            <div id="loading-spinner" class="flex items-center justify-center mb-4">
+                <i class="fas fa-spinner fa-spin text-4xl text-azulBlue"></i>
+                <p class="ml-3"><span class="text-sm text-gray-600 mr-1">Table ID:</span><span id="table-id-display" class="font-mono text-azulBlue text-sm table-id-display" data-table-id=""></span></p>
+            </div> 
+            <p id="status-message" class="text-center text-gray-700 my-3 italic">Checking table status. The game will start automatically when full.</p>
+            
+            <div id="seated-players-list" class="mb-6">
+                <h3 class="text-lg font-semibold text-azulBlue font-display mb-3">Players at Table:</h3>
+                <!-- Player cards will be injected here by lobby.js -->
+                <!-- Example structure generated by JS:
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="player-card bg-white p-3 rounded-lg shadow border border-gray-200 flex items-center space-x-3">
+                        <img src="images/Default_pfp.jpg" alt="Player Name" class="w-10 h-10 rounded-full object-cover border-2 border-azulAccent">
+                        <span class="font-semibold text-gray-700">Player Name <span class="text-sm text-azulAccent">(You)</span></span>
+                    </div>
+                </div>
+                -->
+            </div>
+
+            <button id="leave-table-button" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-base font-bold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 transition-colors duration-300">
+                <i class="fas fa-door-open mr-2"></i>Leave Table
+            </button>
+            <!-- Placeholder for Start Game button -->
+                        <button id="start-game-button" class="hidden mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-md text-base font-bold text-white bg-azulAccent hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-75 transition-colors duration-300">
+                <i class="fas fa-play mr-2"></i>Start Game
+            </button>
+        </div>
+            </div>
+
+            <!-- Right Column: Global Chat -->
+            <div class="lg:col-span-1">
+                <div class="sticky top-4">
+                    <div id="global-chat-container" class="h-96 lg:h-[600px]">
+                        <!-- Chat component will be initialized here -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- JavaScript -->
-    <script src="js/lobby.js"></script>
+    <footer class="mt-12 text-center text-sm text-gray-600">
+        <p>&copy; 2025 Azul Game. All rights reserved.</p>
+    </footer>
+
+    <script type="module" src="js/lobby.js"></script>
 </body>
 </html>

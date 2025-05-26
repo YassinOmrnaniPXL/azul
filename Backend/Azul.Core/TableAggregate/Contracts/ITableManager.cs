@@ -25,7 +25,7 @@ namespace Azul.Core.TableAggregate.Contracts
         /// <summary>
         /// Starts a game for a table.
         /// </summary>
-        IGame StartGameForTable(Guid tableId);
+        IGame StartGameForTable(Guid tableId, Guid userId);
 
         /// <summary>
         /// EXTRA: Fills the table with computer players.

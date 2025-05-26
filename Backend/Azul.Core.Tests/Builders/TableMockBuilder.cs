@@ -17,6 +17,13 @@ public class TableMockBuilder : MockBuilder<ITable>
         Mock.SetupGet(t => t.HasAvailableSeat).Returns(true);
         Mock.SetupGet(t => t.GameId).Returns(Guid.Empty);
         Mock.SetupGet(t => t.Preferences).Returns(() => _tablePreferences);
+        Mock.SetupGet(t => t.HostPlayerId).Returns(Guid.Empty);
+    }
+
+    public TableMockBuilder WithHostPlayerId(Guid hostPlayerId)
+    {
+        Mock.SetupGet(t => t.HostPlayerId).Returns(hostPlayerId);
+        return this;
     }
 
     public TableMockBuilder WithPreferences(ITablePreferences tablePreferences)

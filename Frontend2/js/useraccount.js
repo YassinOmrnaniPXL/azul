@@ -1,3 +1,7 @@
+import { API_BASE_URL, getAuthHeaders, getFullResourceUrl } from './config.js';
+import { audioManager } from './audioManager.js';
+import { profilePictureService } from './profilePictureService.js';
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize tabs
     initTabs();
@@ -10,8 +14,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize profile picture change
     initProfilePicture();
     
-    // For demonstration (placeholder): Load mock user data
-    loadMockUserData();
+    // Initialize audio settings integration
+    initAudioSettings();
+    
+    // Load user data from backend
+    loadUserData();
 });
 
 /**
@@ -46,6 +53,81 @@ function initTabs() {
     });
 }
 
+
+
+/**
+ * Load user data from the backend
+ */
+async function loadUserData() {
+    const usernameInput = document.getElementById('username'); // This is for the username field
+    const displayNameInput = document.getElementById('displayName'); // This is for the display name field
+    const emailInput = document.getElementById('email');
+    const usernameDisplay = document.getElementById('usernameDisplay'); // Welcome message span
+    const profileImage = document.getElementById('profileImage');
+
+    const emailNotifications = document.getElementById('emailNotifications');
+    const soundEffects = document.getElementById('soundEffects');
+    const darkMode = document.getElementById('darkMode');
+    const publicProfile = document.getElementById('publicProfile');
+
+    const generalMessageElement = document.getElementById('profileMessage'); // Or a dedicated one for loading errors
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/user/details`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                showMessage(generalMessageElement, 'Sessie verlopen. Log opnieuw in.', 'error');
+                // Potentially redirect to login: window.location.href = 'login.html';
+            } else {
+                showMessage(generalMessageElement, `Fout bij laden gebruikersgegevens: ${response.statusText}`, 'error');
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Loaded user data:', data); // Debug log
+
+        // Set the username field (this should be the actual username, not display name)
+        if (usernameInput) usernameInput.value = data.userName || data.username || ''; 
+        
+        // Set the display name field
+        if (displayNameInput) displayNameInput.value = data.displayName || '';
+        
+        // Set email field
+        if (emailInput) emailInput.value = data.email || '';
+        
+        // Set the welcome message to use display name
+        if (usernameDisplay) usernameDisplay.textContent = data.displayName || data.userName || 'Speler';
+
+        // Set profile image
+        if (profileImage) {
+            profileImage.src = getFullResourceUrl(data.profilePictureUrl);
+        }
+
+        // Set settings checkboxes (emailNotifications checkbox removed from UI but functionality preserved)
+        if (emailNotifications) emailNotifications.checked = data.emailNotificationsEnabled ?? true;
+        if (soundEffects) soundEffects.checked = data.soundEffectsEnabled ?? true;
+        if (darkMode) darkMode.checked = data.darkModeEnabled ?? false;
+        if (publicProfile) publicProfile.checked = data.isProfilePublic ?? true;
+
+        // Sync audio manager settings with user preferences
+        if (audioManager) {
+            audioManager.isSfxEnabled = data.soundEffectsEnabled ?? true;
+            audioManager.saveSettings();
+        }
+
+    } catch (error) {
+        console.error('Failed to load user data:', error);
+        if (generalMessageElement && !generalMessageElement.textContent) { // Avoid overwriting specific errors
+             showMessage(generalMessageElement, 'Kon gebruikersgegevens niet laden.', 'error');
+        }
+    }
+}
+
 /**
  * Initialize profile form
  */
@@ -54,30 +136,40 @@ function initProfileForm() {
     const profileMessage = document.getElementById('profileMessage');
     
     if (profileForm) {
-        profileForm.addEventListener('submit', (e) => {
+        profileForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Get form data
-            const username = document.getElementById('username').value;
-            const email = document.getElementById('email').value;
-            const displayName = document.getElementById('displayName').value;
-            
-            // Here you would normally send the data to the backend
-            // But since the backend is not ready, we'll just show a success message
-            
-            // Update the username display
-            const usernameDisplay = document.getElementById('usernameDisplay');
-            if (usernameDisplay) {
-                usernameDisplay.textContent = username;
+            const displayName = document.getElementById('displayName').value; // Get from the display name field
+            // Email is not updatable via this endpoint as per backend changes.
+            // const email = document.getElementById('email').value; 
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/profile`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ displayName }), // Only sending displayName
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: `HTTP error ${response.status}` }));
+                    showMessage(profileMessage, errorData.message || 'Profiel bijwerken mislukt.', 'error');
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Update the username display immediately if it exists
+                const usernameDisplay = document.getElementById('usernameDisplay');
+                if (usernameDisplay) {
+                    usernameDisplay.textContent = displayName;
+                }
+
+                showMessage(profileMessage, 'Profiel succesvol bijgewerkt!', 'success');
+
+            } catch (error) {
+                console.error('Failed to update profile:', error);
+                if (!profileMessage.textContent.includes('succesvol')) { // Don't overwrite success message if error is a follow-up console error
+                    showMessage(profileMessage, 'Fout bij bijwerken profiel.', 'error');
+                }
             }
-            
-            // Show success message
-            showMessage(profileMessage, 'Profiel succesvol bijgewerkt!', 'success');
-            
-            // Store in local storage (for demo purposes)
-            localStorage.setItem('azul_username', username);
-            localStorage.setItem('azul_email', email);
-            localStorage.setItem('azul_displayName', displayName);
         });
     }
 }
@@ -90,32 +182,44 @@ function initPasswordForm() {
     const passwordMessage = document.getElementById('passwordMessage');
     
     if (passwordForm) {
-        passwordForm.addEventListener('submit', (e) => {
+        passwordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Get form data
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            // Validate passwords match
+
             if (newPassword !== confirmPassword) {
                 showMessage(passwordMessage, 'Nieuwe wachtwoorden komen niet overeen!', 'error');
                 return;
             }
-            
-            // Validate password length (demo purposes)
             if (newPassword.length < 6) {
                 showMessage(passwordMessage, 'Wachtwoord moet minimaal 6 tekens bevatten!', 'error');
                 return;
             }
-            
-            // Here you would normally send the data to the backend
-            // But since the backend is not ready, we'll just show a success message
-            showMessage(passwordMessage, 'Wachtwoord succesvol gewijzigd!', 'success');
-            
-            // Reset form
-            passwordForm.reset();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/password`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ currentPassword, newPassword }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: `HTTP error ${response.status}` }));
+                    showMessage(passwordMessage, errorData.message || 'Wachtwoord wijzigen mislukt.', 'error');
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                showMessage(passwordMessage, 'Wachtwoord succesvol gewijzigd!', 'success');
+                passwordForm.reset();
+
+            } catch (error) {
+                console.error('Failed to change password:', error);
+                 if (!passwordMessage.textContent.includes('succesvol')) {
+                    showMessage(passwordMessage, 'Fout bij wijzigen wachtwoord.', 'error');
+                }
+            }
         });
     }
 }
@@ -128,24 +232,49 @@ function initSettingsForm() {
     const settingsMessage = document.getElementById('settingsMessage');
     
     if (settingsForm) {
-        settingsForm.addEventListener('submit', (e) => {
+        settingsForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Get form data
-            const emailNotifications = document.getElementById('emailNotifications').checked;
-            const soundEffects = document.getElementById('soundEffects').checked;
-            const darkMode = document.getElementById('darkMode').checked;
-            const publicProfile = document.getElementById('publicProfile').checked;
+            // Get current email notifications setting from loaded data (since checkbox is removed from UI)
+            const emailNotificationsElement = document.getElementById('emailNotifications');
+            const emailNotificationsEnabled = emailNotificationsElement ? emailNotificationsElement.checked : true; // Default to true if element doesn't exist
             
-            // Here you would normally send the data to the backend
-            // But since the backend is not ready, we'll just show a success message
-            showMessage(settingsMessage, 'Instellingen succesvol opgeslagen!', 'success');
-            
-            // Store in local storage (for demo purposes)
-            localStorage.setItem('azul_emailNotifications', emailNotifications);
-            localStorage.setItem('azul_soundEffects', soundEffects);
-            localStorage.setItem('azul_darkMode', darkMode);
-            localStorage.setItem('azul_publicProfile', publicProfile);
+            const soundEffectsEnabled = document.getElementById('soundEffects').checked;
+            const darkModeEnabled = document.getElementById('darkMode').checked;
+            const isProfilePublic = document.getElementById('publicProfile').checked;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/settings`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ 
+                        emailNotificationsEnabled, 
+                        soundEffectsEnabled, 
+                        darkModeEnabled, 
+                        isProfilePublic 
+                    }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: `HTTP error ${response.status}` }));
+                    showMessage(settingsMessage, errorData.message || 'Instellingen opslaan mislukt.', 'error');
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                showMessage(settingsMessage, 'Instellingen succesvol opgeslagen!', 'success');
+
+                // Sync audio manager settings with updated preferences
+                if (audioManager) {
+                    audioManager.isSfxEnabled = soundEffectsEnabled;
+                    audioManager.saveSettings();
+                }
+
+            } catch (error) {
+                console.error('Failed to save settings:', error);
+                if (!settingsMessage.textContent.includes('succesvol')) {
+                    showMessage(settingsMessage, 'Fout bij opslaan instellingen.', 'error');
+                }
+            }
         });
     }
 }
@@ -154,84 +283,117 @@ function initSettingsForm() {
  * Initialize profile picture functionality
  */
 function initProfilePicture() {
-    const changeProfilePic = document.getElementById('changeProfilePic');
+    const changeProfilePicButton = document.getElementById('changeProfilePic');
     const profilePicInput = document.getElementById('profilePicInput');
     const profileImage = document.getElementById('profileImage');
-    
-    if (changeProfilePic && profilePicInput && profileImage) {
-        // Open file dialog when clicking change button
-        changeProfilePic.addEventListener('click', () => {
+    const profileMessage = document.getElementById('profileMessage'); // For showing errors/success related to pic change
+
+    if (changeProfilePicButton && profilePicInput && profileImage) {
+        changeProfilePicButton.addEventListener('click', () => {
             profilePicInput.click();
         });
-        
-        // Handle image selection
-        profilePicInput.addEventListener('change', (e) => {
+
+        profilePicInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
-            if (file) {
-                // Validate it's an image
-                if (!file.type.match('image.*')) {
-                    alert('Selecteer een afbeelding');
-                    return;
+            if (!file) return;
+
+            if (!file.type.match('image.*')) {
+                showMessage(profileMessage, 'Selecteer een afbeelding (JPG, PNG, GIF).', 'error');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit, same as backend
+                showMessage(profileMessage, 'Bestand is te groot (max 5MB).', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('profilePicture', file);
+
+            // Get auth headers but only use Authorization, not Content-Type for FormData
+            const authHeaders = getAuthHeaders();
+            const headers = {};
+            if (authHeaders['Authorization']) {
+                headers['Authorization'] = authHeaders['Authorization'];
+            }
+            // Don't set Content-Type - let browser set it automatically for FormData
+
+            console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
+            console.log('FormData entries:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
+            console.log('Headers to send:', headers);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/profile-picture`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData,
+                });
+
+                console.log('Upload response status:', response.status);
+
+                if (!response.ok) {
+                    console.log('Response headers:', response.headers);
+                    const responseText = await response.text();
+                    console.log('Raw response text:', responseText);
+                    
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(responseText);
+                    } catch (e) {
+                        errorData = { message: responseText || `HTTP error ${response.status}` };
+                    }
+                    
+                    console.log('Upload error data:', errorData);
+                    showMessage(profileMessage, errorData.message || 'Profielfoto uploaden mislukt.', 'error');
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Invalidate the profile picture cache for the current user
+                const currentUserId = localStorage.getItem('userId');
+                if (currentUserId) {
+                    profilePictureService.invalidateUser(currentUserId);
                 }
                 
-                // Read and preview the image
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    profileImage.src = e.target.result;
-                    
-                    // Store in local storage (for demo purposes)
-                    localStorage.setItem('azul_profilePic', e.target.result);
-                };
-                reader.readAsDataURL(file);
+                profileImage.src = getFullResourceUrl(data.profilePictureUrl);
+                showMessage(profileMessage, 'Profielfoto succesvol bijgewerkt!', 'success');
+            
+            } catch (error) {
+                console.error('Failed to upload profile picture:', error);
+                 if (!profileMessage.textContent.includes('succesvol')) {
+                    showMessage(profileMessage, 'Fout bij uploaden profielfoto.', 'error');
+                }
             }
+            // Reset file input to allow re-uploading the same file if needed after an error
+            profilePicInput.value = ''; 
         });
     }
 }
 
 /**
- * Load mock user data (for demonstration purposes)
+ * Initialize audio settings integration
  */
-function loadMockUserData() {
-    // Check if we have stored user data and use it
-    const username = localStorage.getItem('azul_username') || 'SpelerNaam';
-    const email = localStorage.getItem('azul_email') || 'speler@voorbeeld.nl';
-    const displayName = localStorage.getItem('azul_displayName') || 'Azul Meester';
-    const profilePic = localStorage.getItem('azul_profilePic');
+function initAudioSettings() {
+    const soundEffectsCheckbox = document.getElementById('soundEffects');
     
-    // Set values
-    const usernameInput = document.getElementById('username');
-    const emailInput = document.getElementById('email');
-    const displayNameInput = document.getElementById('displayName');
-    const usernameDisplay = document.getElementById('usernameDisplay');
-    const profileImage = document.getElementById('profileImage');
-    
-    if (usernameInput) usernameInput.value = username;
-    if (emailInput) emailInput.value = email;
-    if (displayNameInput) displayNameInput.value = displayName;
-    if (usernameDisplay) usernameDisplay.textContent = username;
-    
-    // Set profile pic if it exists
-    if (profileImage && profilePic) {
-        profileImage.src = profilePic;
-    }
-    
-    // Set settings
-    const emailNotifications = document.getElementById('emailNotifications');
-    const soundEffects = document.getElementById('soundEffects');
-    const darkMode = document.getElementById('darkMode');
-    const publicProfile = document.getElementById('publicProfile');
-    
-    if (emailNotifications) {
-        emailNotifications.checked = localStorage.getItem('azul_emailNotifications') !== 'false';
-    }
-    if (soundEffects) {
-        soundEffects.checked = localStorage.getItem('azul_soundEffects') !== 'false';
-    }
-    if (darkMode) {
-        darkMode.checked = localStorage.getItem('azul_darkMode') === 'true';
-    }
-    if (publicProfile) {
-        publicProfile.checked = localStorage.getItem('azul_publicProfile') !== 'false';
+    if (soundEffectsCheckbox) {
+        soundEffectsCheckbox.addEventListener('change', (e) => {
+            // Immediately sync with audio manager for instant feedback
+            if (audioManager) {
+                audioManager.isSfxEnabled = e.target.checked;
+                audioManager.saveSettings();
+                
+                // Play a test sound if enabled
+                if (e.target.checked) {
+                    setTimeout(() => {
+                        audioManager.playSfx('buttonClick', 0.7);
+                    }, 100);
+                }
+            }
+        });
     }
 }
 
@@ -244,19 +406,18 @@ function loadMockUserData() {
 function showMessage(messageElement, message, type) {
     if (messageElement) {
         messageElement.textContent = message;
-        messageElement.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
-        
+        messageElement.className = 'p-3 rounded-md'; // Reset classes then add common ones
+
         if (type === 'success') {
             messageElement.classList.add('bg-green-100', 'text-green-800');
         } else {
             messageElement.classList.add('bg-red-100', 'text-red-800');
         }
-        
-        messageElement.classList.add('p-3', 'rounded-md');
-        
-        // Hide message after 3 seconds
+        messageElement.classList.remove('hidden');
+
         setTimeout(() => {
             messageElement.classList.add('hidden');
+            messageElement.textContent = ''; // Clear text after hiding
         }, 3000);
     }
 } 
